@@ -14,6 +14,26 @@ with Runtime("http://127.0.0.1:8876", api_key) as runtime:
 # Le context manager appelle lease.release().
 ```
 
+## Tout le projet dans ce dépôt
+
+[Site public](https://strowger-environments.elnh.chatgpt.site/) · [Guide public de reproduction](https://strowger-environments.elnh.chatgpt.site/docs) · [Télécharger toutes les sources](https://github.com/strowgerV1/strowger-env/archive/refs/heads/main.zip)
+
+| Dossier ou fichier | Contenu |
+|---|---|
+| [`site/`](site/) | Site complet : HTML, CSS, JavaScript, polices, vidéos, modèle 3D, textures et décodeurs |
+| [`strowger_env/`](strowger_env/) | API de réservation, console locale, SDK Python et adaptateurs Chromium, Linux Docker et Android ADB |
+| [`docker/`](docker/) | Image reproductible du bureau Linux |
+| [`scripts/`](scripts/) et [`Banc-telephones.command`](Banc-telephones.command) | Installation et lancement du banc local |
+| [`tests/`](tests/) et [`.github/workflows/`](.github/workflows/) | Tests automatisés et vérification continue |
+| [`docs/`](docs/) et [`DEMAIN.md`](DEMAIN.md) | Protocole, architecture et préparation du parc physique |
+| [`docs/visual-review/`](docs/visual-review/) | Comparaisons visuelles et captures des sections du site |
+
+![Site public STROWGER](docs/screenshots/site.png)
+
+![Console locale : mission navigateur réussie](docs/screenshots/console-browser.png)
+
+Les clés, inventaires USB privés, captures de futurs appareils et journaux d’exécution restent locaux. Les dépendances et fichiers de build sont recréés à l’installation. Voir [LICENSE](LICENSE) et [site/NOTICE.md](site/NOTICE.md) pour les périmètres de licence.
+
 ## Ce qui fonctionne
 
 | Ressource | Implémentation | Validation locale du 22 octobre 2026 |
