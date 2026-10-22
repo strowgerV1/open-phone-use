@@ -2,12 +2,29 @@ import asyncio
 import base64
 import os
 import re
+import shlex
 from urllib.parse import urlparse
+
+
+def coordinates(args, x_name, y_name):
+    x, y = args[x_name], args[y_name]
+    if type(x) is not int or type(y) is not int or not (0 <= x <= 10000 and 0 <= y <= 10000):
+        raise ValueError('Invalid coordinates')
+    return x, y
+
+
+def input_text(args, ascii_only=False):
+    text = args['text']
+    if not isinstance(text, str) or not 1 <= len(text) <= 2000:
+        raise ValueError('Text must contain 1 to 2000 characters')
+    if ascii_only and any(not 32 <= ord(c) <= 126 for c in text):
+        raise ValueError('Android ADB text input supports printable ASCII only')
+    return text
 
 
 class Browser:
     """A fresh Chromium process per lease; no direct endpoint exposed."""
-    actions = ['navigate', 'observe', 'click', 'fill', 'screenshot']
+    actions = ['navigate', 'observe', 'click', 'fill', 'screenshot', 'tap', 'type', 'key', 'scroll']
 
     async def start(self):
         from playwright.async_api import async_playwright
@@ -31,6 +48,21 @@ class Browser:
             await self.page.locator(args['selector']).click()
         elif action == 'fill':
             await self.page.locator(args['selector']).fill(args['text'])
+        elif action == 'tap':
+            x, y = coordinates(args, 'x', 'y')
+            await self.page.mouse.click(x, y)
+        elif action == 'type':
+            await self.page.keyboard.insert_text(input_text(args, ascii_only=False))
+        elif action == 'key':
+            key = args.get('key')
+            if key not in ('Enter', 'Tab', 'Escape', 'Backspace', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'):
+                raise ValueError('Unsupported key')
+            await self.page.keyboard.press(key)
+        elif action == 'scroll':
+            delta = args.get('delta_y')
+            if type(delta) is not int or not -4000 <= delta <= 4000:
+                raise ValueError('Invalid scroll distance')
+            await self.page.mouse.wheel(0, delta)
         elif action == 'screenshot':
             return {'png_base64': base64.b64encode(await self.page.screenshot()).decode()}
         elif action != 'observe':
@@ -49,7 +81,7 @@ class Browser:
 
 class Android:
     """Exclusive registered device. Release does NOT wipe user data."""
-    actions = ['observe', 'screenshot', 'tap', 'key']
+    actions = ['observe', 'screenshot', 'tap', 'key', 'swipe', 'type', 'open_app']
 
     def __init__(self, serial):
         self.serial = serial
@@ -75,10 +107,26 @@ class Android:
         if action in ('observe', 'screenshot'):
             return {'png_base64': base64.b64encode(await self.command('exec-out', 'screencap', '-p')).decode()}
         if action == 'tap':
-            x, y = args['x'], args['y']
-            if type(x) is not int or type(y) is not int or not (0 <= x <= 10000 and 0 <= y <= 10000):
-                raise ValueError('Invalid coordinates')
+            x, y = coordinates(args, 'x', 'y')
             await self.command('shell', 'input', 'tap', str(x), str(y))
+        elif action == 'swipe':
+            x1, y1 = coordinates(args, 'x1', 'y1')
+            x2, y2 = coordinates(args, 'x2', 'y2')
+            duration = args.get('duration_ms', 350)
+            if type(duration) is not int or not 50 <= duration <= 2000:
+                raise ValueError('Invalid swipe duration')
+            await self.command('shell', 'input', 'swipe', str(x1), str(y1), str(x2), str(y2), str(duration))
+        elif action == 'type':
+            text = input_text(args, ascii_only=True)
+            # ADB shell joins arguments remotely. Quote before that boundary; never expose a shell endpoint.
+            if '%' in text:
+                raise ValueError('Literal percent is not supported by ADB input text')
+            await self.command('shell', 'input', 'text', shlex.quote(text.replace(' ', '%s')))
+        elif action == 'open_app':
+            package = args.get('package')
+            if not isinstance(package, str) or not re.fullmatch(r'[A-Za-z][A-Za-z0-9_]*(?:\.[A-Za-z][A-Za-z0-9_]*)+', package) or len(package) > 200:
+                raise ValueError('Invalid Android package')
+            await self.command('shell', 'monkey', '-p', package, '-c', 'android.intent.category.LAUNCHER', '1')
         elif action == 'key':
             key = args.get('key')
             if key not in ('HOME', 'BACK', 'ENTER'):
@@ -124,7 +172,7 @@ class Desktop:
                 os.environ.get('ENV_DESKTOP_IMAGE', 'strowger-desktop:0.1.0'))
             for _ in range(15):
                 try:
-                    await self.command('exec', self.name, 'xdpyinfo')
+                    await self.command('exec', self.name, 'test', '-f', '/tmp/strowger-desktop-ready')
                     return
                 except RuntimeError:
                     await asyncio.sleep(.5)

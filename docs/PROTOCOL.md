@@ -28,9 +28,9 @@ Un échec de nettoyage met la ressource en quarantaine et continue de consommer 
 
 Erreurs : 401 authentification, 404 identité/lease, 409 capacité, 410 lease inactif, 422 validation, 501 provider non configuré, 502 action échouée/timeout, 503 démarrage/nettoyage échoué. La santé du processus ne garantit pas que Docker, Chromium ou ADB soient disponibles.
 
-Actions navigateur : `navigate(url)`, `observe()`, `click(selector)`, `fill(selector,text)`, `screenshot()`. Les URL doivent être HTTP(S) ; ce filtre ne bloque pas les réseaux locaux, redirections et sous-ressources. Ce runtime local n’a pas de filtre egress.
+Actions navigateur : `navigate(url)`, `observe()`, `click(selector)`, `fill(selector,text)`, `screenshot()`, `tap(x,y)`, `type(text)`, `key(key)`, `scroll(delta_y)`. Touches autorisées : Enter, Tab, Escape, Backspace et les quatre flèches ; défilement de -4000 à 4000 pixels. Les URL doivent être HTTP(S) ; ce filtre ne bloque pas les réseaux locaux, redirections et sous-ressources. Ce runtime local n’a pas de filtre egress.
 
-Actions desktop : `observe`/`screenshot`, `tap(x,y)`, `type(text)` (2000 caractères max), `key(key)` (Return, Tab, Escape, BackSpace). Actions Android : `observe`/`screenshot`, `tap(x,y)`, `key(key)` (HOME, BACK, ENTER).
+Actions desktop : `observe`/`screenshot`, `tap(x,y)`, `type(text)` (2000 caractères max), `key(key)` (Return, Tab, Escape, BackSpace). Actions Android : `observe`/`screenshot`, `tap(x,y)`, `key(key)` (HOME, BACK, ENTER), `swipe(x1,y1,x2,y2,duration_ms=350)`, `type(text)`, `open_app(package)`. Le swipe dure de 50 à 2000 ms ; coordonnées entières de 0 à 10000. Saisie ADB : ASCII imprimable, sans `%`, 2000 caractères maximum. Le texte est échappé avant la frontière du shell Android. Le package doit être un nom Android valide, sans commande libre.
 
 Les captures PNG sont retournées en `png_base64`. Le texte navigateur est tronqué à 20 000 caractères. Les screenshots et le texte sont renvoyés au client mais ne sont pas enregistrés dans le journal d’audit. Ce journal garde uniquement date, propriétaire, ID, type, opération et résultat. L’opérateur doit gérer sa rétention/rotation.
 
@@ -50,3 +50,11 @@ L'acquisition téléphone accepte le champ facultatif `device_id`, identifiant p
 ## Configuration du pilote 0.2
 
 `ENV_CAPACITY` configure de 1 à 64 places (défaut 4). `strowger init --capacity 6` prépare six places pour le banc local. `ENV_ANDROID_DEVICES_FILE` désigne un inventaire JSON privé lu au démarrage. Priorité : argument `devices` explicite, puis `ENV_ANDROID_DEVICES` si présent, puis le fichier, puis le serial legacy. Une liste explicitement vide désactive les téléphones, sans réactiver le serial legacy. Les changements d’inventaire demandent un redémarrage du broker.
+
+## Console locale 0.3
+
+`GET /` sert la console intégrée au paquet Python, sans CDN. `strowger serve --open` ouvre un code de connexion à usage unique dans le fragment URL, supprimé avant les requêtes HTTP. Le code expire après 120 s. Le serveur échange le code ou la clé opérateur contre un cookie HttpOnly, SameSite=Strict, valable 12 h, en mémoire. Ce mode est destiné à la boucle locale HTTP.
+
+La console utilise `X-Strowger-Console: 1`. Les origines tierces sont refusées. La clé API n’est jamais renvoyée au navigateur après connexion. Les jetons de leases sont gardés dans le sessionStorage de l’onglet pour retrouver ses sessions après rechargement. Les clients SDK continuent d’utiliser leurs en-têtes Bearer.
+
+`GET /demo` fournit une mission locale. Le CLI protège le dossier `data/` contre deux brokers concurrents. Les leases et sessions sont en mémoire ; ce verrou ne remplace pas la coordination entre plusieurs hôtes.

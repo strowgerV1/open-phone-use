@@ -12,11 +12,18 @@ Menu :
 
 1. Diagnostic logiciel et USB, sans action sur l’écran.
 2. Enregistrement des Android autorisés dans l’inventaire privé.
-3. Démarrage du broker local sur `127.0.0.1:8876` (laisser ce Terminal ouvert).
+3. Ouverture de la console et démarrage du broker local sur `127.0.0.1:8876` (laisser ce Terminal ouvert).
 4. Test volontaire de deux appareils : réservation, HOME, capture et libération.
 5. Même test sur jusqu’à six appareils disponibles.
+6. Construction et activation du bureau Linux (Docker requis), puis redémarrage du broker.
 
 Les options 4 et 5 doivent être lancées dans un **second Terminal** après le démarrage du broker. Elles ramènent les appareils à l’écran d’accueil et enregistrent des captures : les lancer seulement quand les téléphones de laboratoire sont prêts.
+
+## Disponible immédiatement
+
+Option 3 ouvre la console connectée automatiquement. Réserver un navigateur, ouvrir la démonstration locale, remplir `#name`, cliquer sur `button`, puis libérer. Avec Docker prêt, l’option 6 active aussi le bureau Linux. La liste des téléphones reste vide jusqu’à leur enregistrement.
+
+Dans une session Android, cliquer dans la capture envoie un tap ; glisser envoie un swipe. Les boutons Accueil/Retour et la saisie ASCII agissent sur le téléphone réservé. L’image peut se rafraîchir toutes les 2 secondes. Libérer les sessions avant l’arrêt.
 
 ## Demain, dans l’ordre
 
@@ -37,7 +44,7 @@ Depuis ce dossier, le lanceur évite de saisir ces commandes :
 ```sh
 .venv/bin/strowger doctor
 .venv/bin/strowger enroll --owner alice --limit 6
-.venv/bin/strowger serve --capacity 6 --port 8876
+.venv/bin/strowger serve --capacity 6 --port 8876 --open
 # Dans un second terminal :
 .venv/bin/strowger smoke --url http://127.0.0.1:8876 --limit 2
 # Puis, après ajout des appareils et redémarrage :

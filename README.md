@@ -1,4 +1,4 @@
-# STROWGER Environment Lease · 0.2.0
+# STROWGER Environment Lease · 0.3.0
 
 **Un agent réserve un environnement, agit, puis le libère.**
 
@@ -7,7 +7,7 @@ Un runtime local expérimental pour vos agents GETA / STROWGER, avec une API HTT
 ```python
 from strowger_env.client import Runtime
 
-with Runtime("http://127.0.0.1:8765", api_key) as runtime:
+with Runtime("http://127.0.0.1:8876", api_key) as runtime:
     with runtime.browser.acquire(ttl=300) as lease:
         lease.act("navigate", url="https://example.com")
         print(lease.act("observe"))
@@ -26,15 +26,27 @@ with Runtime("http://127.0.0.1:8765", api_key) as runtime:
 Le site dans `site/` est une **maquette locale rebrandée de PhoneUse**, demandée pour étude visuelle. Ses ressources tierces, sa police, son modèle 3D et son code ne sont **pas couverts par notre licence MIT**. Les tarifs, la flotte et les performances montrés sont ceux de la maquette source, pas des services STROWGER disponibles. L’utilisateur a confirmé disposer des autorisations de réutilisation pour cette publication ; cela ne relicencie pas ces éléments sous MIT. Voir `site/NOTICE.md`.
 
 
+## La console, utilisable maintenant
+
+```sh
+.venv/bin/strowger serve --capacity 6 --port 8876 --open
+```
+
+Sur Mac, double-cliquer sur **Banc-telephones.command**, puis choisir **3**. Le serveur reste dans Terminal et ouvre la console sur `http://127.0.0.1:8876/`. Un code de connexion à usage unique (2 minutes) ouvre une session opérateur de 12 h ; la clé API n’est jamais renvoyée au navigateur. Sans `--open`, la page accepte votre clé locale dans un champ masqué.
+
+La console permet de réserver plusieurs ressources, afficher et enregistrer leurs captures, cliquer directement dans l’image, saisir, défiler, renouveler et libérer. Les Android acceptent aussi un glissement tactile et le lancement d’une application par son package. Une capture automatique toutes les 2 s est facultative ; ce n’est pas un flux vidéo. Les leases de cet onglet sont retrouvées après actualisation. Une déconnexion libère les sessions de l’onglet ; fermer simplement l’onglet laisse leur TTL expirer.
+
+**Premier essai sans téléphone** : réserver un navigateur → « Essayer la page de démonstration locale » → remplir `#name` avec STROWGER → cliquer sur `button` → vérifier « Bonjour STROWGER » → Libérer. Les actions sont réelles et aucun téléphone fictif n’apparaît dans le parc.
+
 ## Pilote prêt pour 5 à 6 téléphones
 
-Sur Mac, ouvrir **[Banc-telephones.command](Banc-telephones.command)**. Le menu propose diagnostic USB, inscription des Android autorisés, lancement local et tests volontaires HOME/capture/libération. Voir **[DEMAIN.md](DEMAIN.md)** pour le déroulé du premier essai.
+Sur Mac, ouvrir **[Banc-telephones.command](Banc-telephones.command)**. Le menu propose diagnostic USB, inscription des Android autorisés, ouverture de la console, préparation Docker et tests volontaires HOME/capture/libération. Voir **[DEMAIN.md](DEMAIN.md)** pour le déroulé du premier essai.
 
 ```sh
 sh scripts/preparer-pilote.sh
 strowger doctor
 strowger enroll --owner alice --limit 6
-strowger serve --capacity 6 --port 8876
+strowger serve --capacity 6 --port 8876 --open
 # Dans un autre terminal, après chargement de .venv :
 strowger smoke --url http://127.0.0.1:8876 --limit 2
 ```
@@ -52,32 +64,25 @@ pip install -r requirements.lock
 pip install .
 playwright install chromium
 # Sous Linux : playwright install --with-deps chromium
-python scripts/init_env.py
-set -a
-. ./.env
-set +a
-uvicorn strowger_env.server:create_app --factory --host 127.0.0.1 --port 8765
+strowger init --capacity 6
+strowger serve --capacity 6 --port 8876 --open
 ```
 
 Dans un second terminal, depuis le même dossier :
 
 ```sh
 . .venv/bin/activate
-set -a
-. ./.env
-set +a
 python examples/browser_demo.py
 ```
 
 Résultat attendu : `Bonjour STROWGER`, une image `demo.png`, puis libération automatique du navigateur. La page de test est locale ; aucune inscription réelle ni action sur un service externe.
 
-Documentation API interactive : <http://127.0.0.1:8765/docs>.
+Documentation API interactive : <http://127.0.0.1:8876/docs>.
 
 ## Activer le desktop
 
 ```sh
-docker build -t strowger-desktop:0.2.0 docker/desktop
-export ENV_DESKTOP_ENABLED=1
+.venv/bin/strowger desktop
 # Relancer le serveur après ce changement.
 ```
 
@@ -88,7 +93,7 @@ with runtime.desktop.acquire(ttl=60) as lease:
     lease.act("type", text="hello")
 ```
 
-Chaque lease réserve un nouveau conteneur : aucun réseau, aucun dossier hôte monté, utilisateur non-root, capabilities retirées, limites CPU/RAM/PID. Un terminal reste un terminal : toute commande saisie peut s’exécuter dans ce conteneur. Ce n’est pas une VM ni une isolation suffisante pour du code hostile. Le broker nécessite l’accès au daemon Docker ; ne jamais exposer ce daemon aux agents.
+Chaque lease réserve un nouveau conteneur : aucun réseau, aucun dossier hôte monté, utilisateur non-root, capabilities retirées, limites CPU/RAM/PID. Un terminal reste un terminal : toute commande saisie peut s’exécuter dans ce conteneur. Ce n’est pas une VM ni une isolation suffisante pour du code hostile. La commande `strowger desktop` construit l’image et active le fournisseur dans `.env`. Le broker nécessite l’accès au daemon Docker ; ne jamais exposer ce daemon aux agents.
 
 ## Connecter un Android de laboratoire
 
@@ -116,7 +121,7 @@ pytest -q
 ENV_DESKTOP_TEST=1 pytest -q tests/test_desktop.py
 ```
 
-La suite navigateur exige Chromium installé. Le test desktop est désactivé par défaut ; il exige Docker et l’image construite. Le CI exécute le protocole et la mission Chromium, mais pas Docker ni Android.
+La suite vérifie aussi la connexion console, le cookie HttpOnly, le refus des origines tierces, le code à usage unique et le cloisonnement entre propriétaires. La suite navigateur exige Chromium installé. Le test desktop est désactivé par défaut ; il exige Docker et l’image construite. Le CI exécute le protocole et la mission Chromium, mais pas Docker ni Android.
 
 ## Explorer la maquette
 
@@ -135,4 +140,4 @@ Ouvrir <http://127.0.0.1:4173>. Les animations utilisent les ressources récupé
 - [Projets consultés et attribution](docs/SOURCES.md)
 - [Contribuer](CONTRIBUTING.md)
 
-Cette première version est mono-processus et pour des agents de confiance. L’état des leases est en mémoire. Les clés sont configurées par l’opérateur ; le journal JSONL ne contient pas les tokens ni les arguments des actions. Un kill brutal peut laisser des ressources orphelines. Une plateforme cloud publique nécessite des workers isolés, un registre persistant, un contrôle réseau et un mécanisme de réconciliation.
+Cette version est mono-processus et pour des agents de confiance. Le lanceur CLI empêche deux brokers dans le même dossier de données. L’état des leases est en mémoire et la console reste sur la boucle locale ; elle n’est pas un cloud hébergé. Les clés sont configurées par l’opérateur ; le journal JSONL ne contient pas les tokens ni les arguments des actions. Un kill brutal peut laisser des ressources orphelines. Une plateforme cloud publique nécessite des workers isolés, un registre persistant, un contrôle réseau et un mécanisme de réconciliation.

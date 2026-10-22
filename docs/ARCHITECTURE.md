@@ -20,7 +20,7 @@ Le contrat de réservation est commun ; les capacités et garanties restent spé
 
 Le code local ne dépend pas du moteur d’un agent : une intégration mince dans GETA/STROWGER suffit. Il ne remplace pas l’orchestrateur, la mémoire ou les outils métier.
 
-## Limites connues de 0.1
+## Limites connues de 0.3
 
 - Un seul processus Uvicorn ; pas de `--workers 2`, pas de mode reload pour un service en cours. Plusieurs processus peuvent réserver le même téléphone.
 - Le registre des leases est en mémoire. Pas de reprise après crash, de facturation, de file distribuée ou d’idempotency key d’acquisition. Un retry après une réponse perdue peut créer un second lease.
@@ -43,3 +43,5 @@ Le code local ne dépend pas du moteur d’un agent : une intégration mince dan
 ## Acquisition commerciale proposée
 
 Le runtime gratuit peut servir de point d’entrée : tutoriel reproductible → premier environnement local → intégration d’un agent → besoin réel de parallélisme et d’hébergement → offre cloud gérée. Publier le code et ses limites avant de vendre une flotte. Aucun tarif commercial n’est validé ici ; les prix de la maquette restent du contenu source illustratif.
+
+La console opérateur est servie par le broker sur `/`, avec code de lancement à usage unique et cookie HttpOnly local. Elle utilise les mêmes routes de leases que le SDK. Le verrou du lanceur CLI protège un même dossier de données ; les leases et sessions restent en mémoire.

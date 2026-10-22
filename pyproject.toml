@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "strowger-env"
-version = "0.2.0"
+version = "0.3.0"
 description = "Environment leases for AI agents: acquire, act, renew, release"
 requires-python = ">=3.11"
 license = "MIT"
@@ -21,3 +21,6 @@ include = ["strowger_env*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+
+[tool.setuptools.package-data]
+strowger_env = ["web/*.html", "web/*.css", "web/*.js"]

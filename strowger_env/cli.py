@@ -4,6 +4,7 @@ import base64
 from datetime import datetime, timezone
 import json
 import os
+import re
 from pathlib import Path
 import secrets
 import shutil
@@ -131,7 +132,7 @@ def doctor(args):
     authorized = {d['serial'] for d in connected if d['state'] == 'device'}
     checks['connected'] = connected  # Local operator only; never returned by the public API.
     checks['registered_online'] = [d['id'] for d in entries if d['serial'] in authorized]
-    checks['software_ready'] = ('credentials_or_inventory' not in checks and checks['adb'] == 'ok')
+    checks['software_ready'] = ('credentials_or_inventory' not in checks and checks['adb'] == 'ok' and checks['chromium_installed'])
     checks['hardware_ready'] = bool(checks['registered_online'])
     print(json.dumps(checks, indent=2, ensure_ascii=False))
     if not checks['software_ready'] or (args.require_devices and not checks['hardware_ready']):
@@ -178,12 +179,34 @@ def enroll(args):
 def serve(args):
     if args.capacity is not None:
         os.environ['ENV_CAPACITY'] = str(read_capacity(args.capacity))
-    # Validate before Uvicorn; secrets are never emitted in diagnostics.
-    from .server import create_app
-    create_app()
-    print(f'Banc local : http://127.0.0.1:{args.port}/docs · capacité {read_capacity()}')
-    import uvicorn
-    uvicorn.run('strowger_env.server:create_app', factory=True, host='127.0.0.1', port=args.port)
+    import fcntl
+    import time
+    import threading
+    import webbrowser
+    lock_path = Path('data/broker.lock')
+    lock_path.parent.mkdir(parents=True, exist_ok=True)
+    with lock_path.open('a') as lock:
+        try:
+            fcntl.flock(lock.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError:
+            raise RuntimeError('Un broker utilise déjà ce banc. Arrêtez-le avant de relancer.') from None
+        from .server import create_app
+        bootstrap = None
+        if args.open:
+            configured = keys()
+            selected = args.owner or ('alice' if 'alice' in configured else next(iter(configured)))
+            if selected not in configured:
+                raise RuntimeError('Owner is not present in ENV_API_KEYS')
+            bootstrap = {'code': secrets.token_urlsafe(32), 'owner': selected, 'expires': time.monotonic()+120}
+        app = create_app(console_bootstrap=bootstrap)
+        url = f'http://127.0.0.1:{args.port}'
+        print(f'Console locale : {url}/ · API : {url}/docs · capacité {read_capacity()}')
+        if bootstrap:
+            # Fragment never enters HTTP requests or access logs; cleared by the browser.
+            launch_url = url + '/#connect=' + bootstrap['code']
+            threading.Timer(1.5, lambda: webbrowser.open(launch_url)).start()
+        import uvicorn
+        uvicorn.run(app, host='127.0.0.1', port=args.port)
     return 0
 
 
@@ -243,6 +266,26 @@ def smoke(args):
     return 0 if report['status'] == 'passed' else 2
 
 
+def prepare_desktop(args):
+    if not shutil.which('docker'):
+        raise RuntimeError('Docker absent. Installer et démarrer Docker Desktop, puis réessayer.')
+    context = Path('docker/desktop')
+    if not (context / 'Dockerfile').is_file():
+        raise RuntimeError('Lancer cette commande depuis le dossier du projet contenant docker/desktop.')
+    result = subprocess.run(['docker','build','-t','strowger-desktop:0.1.0',str(context)])
+    if result.returncode:
+        raise RuntimeError('Construction Docker échouée ; configuration conservée.')
+    env_path = Path(args.env_file)
+    if not env_path.is_file():
+        raise RuntimeError('Lancer strowger init avant de préparer le desktop.')
+    lines=[line for line in env_path.read_text().splitlines()
+           if not re.match(r'(?:export\s+)?ENV_DESKTOP_(?:ENABLED|IMAGE)\s*=',line.strip())]
+    env_path.write_text('\n'.join(lines)+"\nENV_DESKTOP_ENABLED='1'\nENV_DESKTOP_IMAGE='strowger-desktop:0.1.0'\n")
+    env_path.chmod(0o600)
+    print('Desktop Linux prêt. Redémarrer le broker pour activer la réservation dans la console.')
+    return 0
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description='STROWGER local pilot tools')
     parser.add_argument('--env-file', default='.env')
@@ -255,17 +298,20 @@ def main(argv=None):
     p.add_argument('--owner', default='alice'); p.add_argument('--serial', action='append')
     p.add_argument('--limit', type=int)
     p = sub.add_parser('serve', help='Start one local broker')
-    p.add_argument('--capacity', type=int); p.add_argument('--port', type=int, default=8765)
+    p.add_argument('--capacity', type=int); p.add_argument('--port', type=int, default=8876)
+    p.add_argument('--open', action='store_true', help='Open console with a one-time local connection code')
+    p.add_argument('--owner', help='Console owner (default alice, otherwise first configured owner)')
+    sub.add_parser('desktop', help='Build and enable the Linux desktop locally')
     p = sub.add_parser('smoke', help='Explicit hardware test: reserve, HOME, capture, release')
     p.add_argument('--owner', default='alice'); p.add_argument('--limit', type=int, default=6)
-    p.add_argument('--url', default='http://127.0.0.1:8765')
+    p.add_argument('--url', default='http://127.0.0.1:8876')
     p.add_argument('--output', default='data/runs')
     args = parser.parse_args(argv)
     try:
         if args.command != 'init':
             load_env(args.env_file)
         return {'init': initialize, 'doctor': doctor, 'enroll': enroll,
-                'serve': serve, 'smoke': smoke}[args.command](args)
+                'serve': serve, 'smoke': smoke, 'desktop': prepare_desktop}[args.command](args)
     except (RuntimeError, OSError) as e:
         print('Erreur : ' + str(e), file=sys.stderr)
         return 2

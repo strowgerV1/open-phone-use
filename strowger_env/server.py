@@ -51,7 +51,7 @@ class Lease:
                 'expires_at': self.expires, 'actions': self.adapter.actions, 'device_id': self.device_id}
 
 
-def create_app(keys=None, browser_factory=Browser, capacity=None, audit_path=None, android_factory=Android, devices=None):
+def create_app(keys=None, browser_factory=Browser, capacity=None, audit_path=None, android_factory=Android, devices=None, console_bootstrap=None):
     # Keys are provisioned by the operator, never supplied as an owner label by an agent.
     keys = keys if keys is not None else json.loads(os.environ.get('ENV_API_KEYS', '{}'))
     if not keys or not all(isinstance(k, str) and isinstance(v, str) and len(v) >= 24 for k, v in keys.items()):
@@ -122,7 +122,21 @@ def create_app(keys=None, browser_factory=Browser, capacity=None, audit_path=Non
             if l.state not in ('released', 'expired'):
                 await close(l, 'released')
 
-    app = FastAPI(title='STROWGER Environment Lease', version='0.2.0', lifespan=lifespan)
+    app = FastAPI(title='STROWGER Environment Lease', version='0.3.0', lifespan=lifespan)
+
+    from .console import install_console
+    install_console(app, keys, console_bootstrap)
+
+    from fastapi.responses import FileResponse, HTMLResponse
+    from html import escape
+
+    @app.get('/demo', include_in_schema=False)
+    async def demo():
+        return FileResponse(Path(__file__).parent / 'web' / 'demo.html')
+
+    @app.get('/demo/greet', response_class=HTMLResponse, include_in_schema=False)
+    async def greet(name: str = ''):
+        return '<html lang=fr><meta charset=utf-8><title>Mission terminée</title><body style="font:32px system-ui;background:#e9efdf;padding:80px"><h1>Bonjour ' + escape(name[:120]) + '</h1><p>Mission STROWGER réussie.</p><a href=/demo>Recommencer</a></body></html>'
 
     def owner(authorization):
         if not authorization or not authorization.startswith('Bearer '):
@@ -147,7 +161,7 @@ def create_app(keys=None, browser_factory=Browser, capacity=None, audit_path=Non
 
     @app.get('/health')
     async def health():
-        return {'status': 'ok', 'version': '0.2.0'}
+        return {'status': 'ok', 'version': '0.3.0'}
 
     @app.get('/v1/capabilities')
     async def capabilities(authorization: str | None = Header(default=None)):

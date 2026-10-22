@@ -6,12 +6,15 @@ from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from threading import Thread
 from strowger_env.client import Runtime
+from strowger_env.config import load_env
+
+load_env()
 
 fixture = ThreadingHTTPServer(('127.0.0.1', 0), partial(SimpleHTTPRequestHandler,
                                   directory=str(Path(__file__).parent)))
 Thread(target=fixture.serve_forever, daemon=True).start()
 try:
-    with Runtime(os.environ.get('ENV_URL', 'http://127.0.0.1:8765'), os.environ['ENV_CLIENT_KEY']) as runtime:
+    with Runtime(os.environ.get('ENV_URL', 'http://127.0.0.1:8876'), os.environ['ENV_CLIENT_KEY']) as runtime:
         with runtime.browser.acquire(ttl=60) as lease:
             print('Lease:', lease.id)
             lease.act('navigate', url=f'http://127.0.0.1:{fixture.server_port}/fixture.html')

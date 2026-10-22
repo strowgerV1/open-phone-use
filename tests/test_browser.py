@@ -23,7 +23,11 @@ def test_real_browser_mission_and_isolation(tmp_path):
             url=f'http://127.0.0.1:{server.server_port}/fixture.html'
             act(a, 'navigate', url=url)
             act(a, 'fill', selector='#name', text='STROWGER')
-            assert 'Bonjour STROWGER' in act(a, 'click', selector='button')['text']
+            act(a, 'key', key='Tab')
+            act(a, 'key', key='Enter')
+            assert 'Bonjour STROWGER' in act(a, 'observe')['text']
+            act(a, 'scroll', delta_y=400)
+            assert c.post('/v1/leases/'+a['id']+'/actions', headers={**auth,'X-Lease-Token':a['lease_token']}, json={'action':'key','args':{'key':'Control+R'}}).status_code == 422
             png=base64.b64decode(act(a, 'screenshot')['png_base64'])
             assert png.startswith(b'\x89PNG')
             assert 'Bonjour STROWGER' not in act(b, 'navigate', url=url)['text']

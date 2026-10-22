@@ -136,3 +136,19 @@ def test_smoke_without_devices_cannot_claim_success(monkeypatch):
     report=json.loads(next(Path('data/runs').glob('*/report.json')).read_text())
     assert report['device_tests']==[]
     assert report['status']=='failed'
+
+
+def test_desktop_preparation_preserves_keys_and_replaces_disabled_config(monkeypatch):
+    cli.main(['init'])
+    before = json.loads(os.environ['ENV_API_KEYS'])
+    with Path('.env').open('a') as f: f.write("ENV_DESKTOP_ENABLED='0'\n")
+    Path('docker/desktop').mkdir(parents=True)
+    Path('docker/desktop/Dockerfile').write_text('FROM debian:bookworm-slim')
+    monkeypatch.setattr(cli.shutil, 'which', lambda _: '/test/docker')
+    monkeypatch.setattr(cli.subprocess, 'run', lambda *a, **k: SimpleNamespace(returncode=0))
+    assert cli.main(['desktop']) == 0
+    os.environ.pop('ENV_DESKTOP_ENABLED', None)
+    load_env()
+    assert os.environ['ENV_DESKTOP_ENABLED'] == '1'
+    assert json.loads(os.environ['ENV_API_KEYS']) == before
+    assert Path('.env').stat().st_mode & 0o777 == 0o600

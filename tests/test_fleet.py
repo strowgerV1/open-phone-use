@@ -201,3 +201,29 @@ def test_explicit_empty_inventory_overrides_legacy_serial(tmp_path, monkeypatch)
         assert c.get('/v1/devices', headers=A).json() == {'devices': []}
     with TestClient(create_app(KEYS, audit_path=tmp_path/'c', android_factory=Phone, devices=[])) as c:
         assert c.get('/v1/devices', headers=A).json() == {'devices': []}
+
+
+def test_android_swipe_text_and_package_shell_boundary():
+    import asyncio
+    import shlex
+    calls=[]
+    class Recording(Android):
+        async def command(self,*args):
+            calls.append(args)
+            return b''
+    async def check():
+        phone=Recording('USB001')
+        await phone.act('swipe',{'x1':100,'y1':800,'x2':100,'y2':200,'duration_ms':350})
+        payload="hello; $(touch /tmp/not-created) `id` ' &"
+        await phone.act('type',{'text':payload})
+        await phone.act('open_app',{'package':'com.android.settings'})
+        for action,args in [('swipe',{'x1':True,'y1':1,'x2':1,'y2':2}),
+                            ('swipe',{'x1':1,'y1':1,'x2':1,'y2':2,'duration_ms':5000}),
+                            ('type',{'text':'é'}),('type',{'text':'%s'}),
+                            ('open_app',{'package':'com.android;reboot'})]:
+            with pytest.raises(ValueError):await phone.act(action,args)
+        return payload
+    payload=asyncio.run(check())
+    assert calls[0]==('shell','input','swipe','100','800','100','200','350')
+    assert shlex.split(' '.join(calls[1][1:]))==['input','text',payload.replace(' ','%s')]
+    assert calls[2]==('shell','monkey','-p','com.android.settings','-c','android.intent.category.LAUNCHER','1')

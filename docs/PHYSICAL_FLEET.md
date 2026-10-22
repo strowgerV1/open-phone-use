@@ -18,7 +18,7 @@ Depuis le dossier du projet, après chargement des clés créées par `scripts/i
 
 ```sh
 export ENV_ANDROID_DEVICES='[{"id":"phone-01","serial":"REMPLACER_SERIAL_1","owners":["agent-demo"]},{"id":"phone-02","serial":"REMPLACER_SERIAL_2","owners":["agent-demo"]}]'
-uvicorn strowger_env.server:create_app --factory --host 127.0.0.1 --port 8765
+uvicorn strowger_env.server:create_app --factory --host 127.0.0.1 --port 8876
 ```
 
 Remplacer `agent-demo` par le nom réellement configuré. Les identifiants sont uniques ; un serial ne peut figurer deux fois. Seuls les serials enregistrés sont adressables. Aucun shell générique, installation APK, accès aux fichiers hôte ou commande ADB fournie par l'agent n'est exposé. Les actions autorisées sont capture/observation, tap et touches HOME/BACK/ENTER.
@@ -28,7 +28,7 @@ Remplacer `agent-demo` par le nom réellement configuré. Les identifiants sont 
 ```python
 from strowger_env.client import Runtime
 
-with Runtime("http://127.0.0.1:8765", api_key) as runtime:
+with Runtime("http://127.0.0.1:8876", api_key) as runtime:
     print(runtime.devices())
     with runtime.phone.acquire(device_id="phone-01", ttl=120) as first:
         with runtime.phone.acquire(device_id="phone-02", ttl=120) as second:
