@@ -46,3 +46,7 @@ Pour une intégration GETA/STROWGER, provisionner une clé distincte par agent, 
 L'acquisition téléphone accepte le champ facultatif `device_id`, identifiant public configuré par l'opérateur, jamais un serial arbitraire. La réponse et l'inspection incluent `device_id` (null pour browser/desktop). Le SDK expose `runtime.phone.acquire(ttl=120, device_id="phone-01")`.
 
 `GET /v1/devices` exige une clé Bearer et ne liste que les appareils autorisés : `{"devices":[{"id":"phone-01","kind":"phone","state":"available"}]}`. Le SDK fournit `runtime.devices()`. Ni serial USB, ni token, ni identité d'un autre propriétaire ne sont retournés. Voir [les états, la configuration et les limites](PHYSICAL_FLEET.md).
+
+## Configuration du pilote 0.2
+
+`ENV_CAPACITY` configure de 1 à 64 places (défaut 4). `strowger init --capacity 6` prépare six places pour le banc local. `ENV_ANDROID_DEVICES_FILE` désigne un inventaire JSON privé lu au démarrage. Priorité : argument `devices` explicite, puis `ENV_ANDROID_DEVICES` si présent, puis le fichier, puis le serial legacy. Une liste explicitement vide désactive les téléphones, sans réactiver le serial legacy. Les changements d’inventaire demandent un redémarrage du broker.

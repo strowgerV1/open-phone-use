@@ -36,7 +36,7 @@ with Runtime("http://127.0.0.1:8765", api_key) as runtime:
             image = second.act("screenshot")  # PNG encodé en base64
 ```
 
-Sans `device_id`, le broker choisit le premier appareil autorisé, libre et accessible. L'acquisition est atomique dans **un seul processus**. La capacité globale reste de quatre environnements par défaut, tous types confondus. Une installation plus grande nécessite d'ajuster la capacité dans le lancement applicatif et de mesurer les ressources hôte ; le nombre de ports USB n'est pas une preuve de capacité.
+Sans `device_id`, le broker choisit le premier appareil autorisé, libre et accessible. L'acquisition est atomique dans **un seul processus**. La capacité globale reste de quatre environnements par défaut, tous types confondus ; `ENV_CAPACITY` permet de la régler de 1 à 64. Une installation plus grande nécessite de mesurer les ressources hôte ; le nombre de ports USB n'est pas une preuve de capacité.
 
 ## États et réponses API
 
@@ -70,3 +70,47 @@ Ces étapes sont une recette à faire, pas des tests matériels déjà réussis.
 ## iPhone et iPad : chantier séparé
 
 Brancher des iPhone à un hub ne les rend pas contrôlables par l'adaptateur Android. Une voie connue à étudier est Appium XCUITest avec WebDriverAgent, un hôte macOS/Xcode compatible et la configuration des appareils/signatures. Voir les documents officiels [exigences système](https://github.com/appium/appium-xcuitest-driver/blob/master/docs/getting-started/system-requirements.md) et [configuration appareil](https://github.com/appium/appium-xcuitest-driver/blob/master/docs/getting-started/device-setup.md), consultés le 22 octobre 2026. Version iOS/Xcode, provisioning et compatibilité du modèle doivent être validés sur le matériel choisi. Le broker retourne actuellement `ios.enabled=false` ; aucune intégration iOS n'est livrée.
+
+## Préparation aujourd'hui, recette demain avec 5 à 6 téléphones
+
+Aujourd'hui, sans appareils : installer le logiciel et ses dépendances, préparer le banc et créer une configuration vide. Aucune capture ni action sur un téléphone n'est nécessaire pour cette préparation.
+
+```sh
+strowger init --capacity 6
+strowger doctor
+```
+
+`doctor` est un diagnostic local : une flotte vide ou ADB non prêt signifie que la recette matérielle reste à faire. La capacité configurée à six est une limite logicielle de réservations, sans garantie que l'alimentation, le hub ou l'ordinateur supportent six appareils.
+
+Demain, commencer par deux téléphones Android dédiés et déjà autorisés sur l'ordinateur. Charger la configuration selon le lanceur fourni, puis inscrire les appareils. Remplacer `alice` par un propriétaire réellement configuré dans les clés ; l'inscription ne crée pas d'autorisation ADB et ne doit prendre que les appareils explicitement prévus pour ce banc.
+
+```sh
+strowger doctor
+strowger enroll --owner alice
+strowger serve
+```
+
+Dans un second terminal avec la même configuration, lancer explicitement la recette opérateur :
+
+```sh
+strowger smoke --limit 2
+```
+
+Le smoke réserve les appareils, envoie HOME, demande une capture et libère les leases, puis écrit un rapport local. **Il agit réellement sur les téléphones et doit être lancé volontairement par l'opérateur**, avec les bons appareils et comptes de test. Ne pas le lancer aujourd'hui sans téléphones en prétendant que le banc est validé. Vérifier le rapport et les écrans physiques ; conserver les captures localement car elles peuvent contenir les données présentes à l'écran.
+
+Après réussite avec deux appareils, ajouter progressivement les autres, vérifier de nouveau l'inventaire et exécuter :
+
+```sh
+strowger doctor
+strowger enroll --owner alice
+# Après mise à jour de l'inventaire, relancer l'unique broker.
+strowger smoke --limit 6
+```
+
+Si seulement cinq sont disponibles, utiliser `--limit 5` et documenter cinq appareils testés. Le broker ne doit pas tourner deux fois pendant l'inscription ou le redémarrage. Réserver six appareils en parallèle, refuser une septième acquisition et réacquérir un appareil précisément après sa libération sont déjà couverts au niveau protocole avec six faux Android ; cela ne remplace pas la validation USB, ADB, alimentation et thermique de demain.
+
+### Configuration de flotte sur fichier
+
+`ENV_ANDROID_DEVICES_FILE` désigne un fichier JSON opérateur contenant la même liste d'objets `id`, `serial`, `owners` que `ENV_ANDROID_DEVICES`. Un fichier contenant `[]` est valide pour préparer l'installation ; le fournisseur téléphone reste alors désactivé tant qu'aucun appareil n'est inscrit. Fichier absent, JSON malformé, doublons ou permissions invalides bloquent le démarrage. Si `ENV_ANDROID_DEVICES` est défini, son JSON prend priorité sur le fichier, y compris une liste vide explicite. Éviter de conserver cet ancien paramètre lors du passage à l'inscription sur fichier.
+
+`ENV_CAPACITY=6` configure la capacité totale du broker, navigateur et desktop compris. Une valeur non entière, inférieure à un ou supérieure à 64 est refusée au démarrage. Les serials restent privés dans ce fichier ; publier uniquement un exemple sans serial réel, sans clé et sans capture d'écran privée.

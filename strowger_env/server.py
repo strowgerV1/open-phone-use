@@ -13,6 +13,7 @@ from typing import Literal
 from fastapi import FastAPI, Header, HTTPException
 from pydantic import BaseModel, ConfigDict, Field
 from .adapters import Browser, Android, Desktop
+from .config import load_inventory, read_capacity
 
 
 class Acquire(BaseModel):
@@ -50,23 +51,21 @@ class Lease:
                 'expires_at': self.expires, 'actions': self.adapter.actions, 'device_id': self.device_id}
 
 
-def create_app(keys=None, browser_factory=Browser, capacity=4, audit_path=None, android_factory=Android, devices=None):
+def create_app(keys=None, browser_factory=Browser, capacity=None, audit_path=None, android_factory=Android, devices=None):
     # Keys are provisioned by the operator, never supplied as an owner label by an agent.
     keys = keys if keys is not None else json.loads(os.environ.get('ENV_API_KEYS', '{}'))
     if not keys or not all(isinstance(k, str) and isinstance(v, str) and len(v) >= 24 for k, v in keys.items()):
         raise RuntimeError('ENV_API_KEYS must map owners to distinct API keys of at least 24 characters')
     if len(set(keys.values())) != len(keys):
         raise RuntimeError('API keys must be distinct')
+    capacity = read_capacity(capacity)
     leases = {}
     allocation = asyncio.Lock()
     audit = Path(audit_path or os.environ.get('ENV_AUDIT_PATH', 'data/audit.jsonl'))
     audit.parent.mkdir(parents=True, exist_ok=True)
-    serial = os.environ.get('ENV_ANDROID_SERIAL')
-    devices = devices if devices is not None else json.loads(os.environ.get('ENV_ANDROID_DEVICES', '[]'))
+    devices = devices if devices is not None else load_inventory(keys)
     if not isinstance(devices, list):
         raise RuntimeError('Android inventory must be a list')
-    if not devices and serial:
-        devices = [{'id': 'android-01', 'serial': serial, 'owners': list(keys)}]
     inventory = {}
     serials = set()
     for d in devices:
@@ -123,7 +122,7 @@ def create_app(keys=None, browser_factory=Browser, capacity=4, audit_path=None, 
             if l.state not in ('released', 'expired'):
                 await close(l, 'released')
 
-    app = FastAPI(title='STROWGER Environment Lease', version='0.1.0', lifespan=lifespan)
+    app = FastAPI(title='STROWGER Environment Lease', version='0.2.0', lifespan=lifespan)
 
     def owner(authorization):
         if not authorization or not authorization.startswith('Bearer '):
@@ -148,7 +147,7 @@ def create_app(keys=None, browser_factory=Browser, capacity=4, audit_path=None, 
 
     @app.get('/health')
     async def health():
-        return {'status': 'ok', 'version': '0.1.0'}
+        return {'status': 'ok', 'version': '0.2.0'}
 
     @app.get('/v1/capabilities')
     async def capabilities(authorization: str | None = Header(default=None)):

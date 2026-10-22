@@ -1,4 +1,4 @@
-# STROWGER Environment Lease · 0.1.0
+# STROWGER Environment Lease · 0.2.0
 
 **Un agent réserve un environnement, agit, puis le libère.**
 
@@ -20,10 +20,26 @@ with Runtime("http://127.0.0.1:8765", api_key) as runtime:
 |---|---|---|
 | Browser | Chromium dédié à chaque lease ; navigation, observation, clic, saisie, capture | Mission réelle et séparation de deux sessions testées |
 | Desktop | Desktop Linux X11 dans Docker ; capture, clic, texte, touches | Création, capture PNG, saisie et suppression testées |
-| Phone | Flotte Android enregistrée, attribution exclusive par appareil, inventaire autorisé et ADB | 12 tests de flotte simulée ; aucun appareil connecté pour validation matérielle |
+| Phone | Flotte Android enregistrée, attribution exclusive par appareil, inventaire autorisé et ADB | tests de flotte simulée ; aucun appareil connecté pour validation matérielle |
 | iOS, Windows VM, portique robotisé | À développer | Non disponibles |
 
 Le site dans `site/` est une **maquette locale rebrandée de PhoneUse**, demandée pour étude visuelle. Ses ressources tierces, sa police, son modèle 3D et son code ne sont **pas couverts par notre licence MIT**. Les tarifs, la flotte et les performances montrés sont ceux de la maquette source, pas des services STROWGER disponibles. L’utilisateur a confirmé disposer des autorisations de réutilisation pour cette publication ; cela ne relicencie pas ces éléments sous MIT. Voir `site/NOTICE.md`.
+
+
+## Pilote prêt pour 5 à 6 téléphones
+
+Sur Mac, ouvrir **[Banc-telephones.command](Banc-telephones.command)**. Le menu propose diagnostic USB, inscription des Android autorisés, lancement local et tests volontaires HOME/capture/libération. Voir **[DEMAIN.md](DEMAIN.md)** pour le déroulé du premier essai.
+
+```sh
+sh scripts/preparer-pilote.sh
+strowger doctor
+strowger enroll --owner alice --limit 6
+strowger serve --capacity 6 --port 8876
+# Dans un autre terminal, après chargement de .venv :
+strowger smoke --url http://127.0.0.1:8876 --limit 2
+```
+
+`strowger` est installé dans `.venv/bin/` : activer `.venv` ou utiliser le chemin complet. L’inventaire opérateur est stocké dans `data/fleet.json` et les clés dans `.env`, tous deux privés et ignorés par Git. Le diagnostic distingue logiciel installé et matériel prêt. `smoke` est une action explicite de test matériel, jamais lancée automatiquement. La capacité est configurable avec `ENV_CAPACITY` (1 à 64, défaut 4 hors configuration pilote). Le pilote généré utilise 6.
 
 ## Démarrer en local
 
@@ -33,7 +49,7 @@ Prérequis : Python 3.11+ ; internet pour télécharger Chromium et les dépenda
 python3 -m venv .venv
 . .venv/bin/activate
 pip install -r requirements.lock
-pip install -e .
+pip install .
 playwright install chromium
 # Sous Linux : playwright install --with-deps chromium
 python scripts/init_env.py
@@ -60,7 +76,7 @@ Documentation API interactive : <http://127.0.0.1:8765/docs>.
 ## Activer le desktop
 
 ```sh
-docker build -t strowger-desktop:0.1.0 docker/desktop
+docker build -t strowger-desktop:0.2.0 docker/desktop
 export ENV_DESKTOP_ENABLED=1
 # Relancer le serveur après ce changement.
 ```

@@ -4,11 +4,14 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "strowger-env"
-version = "0.1.0"
+version = "0.2.0"
 description = "Environment leases for AI agents: acquire, act, renew, release"
 requires-python = ">=3.11"
 license = "MIT"
 dependencies = ["fastapi", "uvicorn", "playwright", "httpx"]
+
+[project.scripts]
+strowger = "strowger_env.cli:main"
 
 [project.optional-dependencies]
 test = ["pytest"]
