@@ -16,4 +16,12 @@ def test_real_desktop(tmp_path, monkeypatch):
         assert r.status_code==200, r.text
         assert base64.b64decode(r.json()['png_base64']).startswith(b'\x89PNG')
         assert c.post(url+'/actions',headers=h,json={'action':'type','args':{'text':'hello'}}).status_code==200
+        # Desktop startup must map its terminal without a blocking wallpaper dialog.
+        import subprocess
+        names=subprocess.check_output(['docker','ps','--filter','label=strowger.managed=true','--format','{{.Names}}'],text=True).splitlines()
+        assert names
+        for name in names:
+            titles=subprocess.check_output(['docker','exec',name,'xwininfo','-root','-tree'],text=True)
+            assert 'xmessage' not in titles
+            assert 'STROWGER dedicated Linux desktop' in titles
         assert c.delete(url,headers=h).json()['state']=='released'
