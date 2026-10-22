@@ -22,6 +22,14 @@ class Lease:
     def release(self):
         return self.request('DELETE')
 
+    def start_viewer(self):
+        response = self.client.http.post('/v1/leases/' + self.id + '/viewer', headers={'X-Lease-Token': self.token})
+        response.raise_for_status(); return response.json()
+
+    def stop_viewer(self):
+        response = self.client.http.delete('/v1/leases/' + self.id + '/viewer', headers={'X-Lease-Token': self.token})
+        response.raise_for_status(); return response.json()
+
     def __enter__(self):
         return self
 
@@ -44,13 +52,20 @@ class Resource:
 
 class Runtime:
     def __init__(self, url, api_key):
-        self.http = httpx.Client(base_url=url, headers={'Authorization': 'Bearer ' + api_key}, timeout=60)
+        self.http = httpx.Client(base_url=url, headers={'Authorization': 'Bearer ' + api_key}, timeout=180)
         self.browser, self.desktop, self.phone = (Resource(self, k) for k in ('browser', 'desktop', 'phone'))
 
     def devices(self):
         response = self.http.get('/v1/devices')
         response.raise_for_status()
         return response.json()['devices']
+
+    def submit_job(self, steps, ttl=300, device_id=None, name=None):
+        body = {'steps': steps, 'ttl': ttl}
+        if device_id is not None: body['device_id'] = device_id
+        if name is not None: body['name'] = name
+        response = self.http.post('/v1/jobs', json=body); response.raise_for_status()
+        return Job(self, response.json())
 
     def close(self):
         self.http.close()
@@ -60,3 +75,17 @@ class Runtime:
 
     def __exit__(self, *exc):
         self.close()
+
+
+class Job:
+    def __init__(self, runtime, data):
+        self.runtime, self.data = runtime, data
+        self.id, self.token = data['id'], data['job_token']
+
+    def request(self, suffix='', method='GET'):
+        response = self.runtime.http.request(method, '/v1/jobs/' + self.id + suffix,
+                                             headers={'X-Job-Token': self.token})
+        response.raise_for_status(); self.data.update(response.json()); return self.data
+
+    def status(self): return self.request()
+    def cancel(self): return self.request('/cancel', 'POST')

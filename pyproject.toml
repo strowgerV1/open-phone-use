@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "strowger-env"
-version = "0.3.0"
+version = "0.4.0"
 description = "Environment leases for AI agents: acquire, act, renew, release"
 requires-python = ">=3.11"
 license = "MIT"
@@ -15,6 +15,7 @@ strowger = "strowger_env.cli:main"
 
 [project.optional-dependencies]
 test = ["pytest"]
+android = ["uiautomator2==3.7.0"]
 
 [tool.setuptools.packages.find]
 include = ["strowger_env*"]

@@ -1,19 +1,26 @@
 {
-  "date": "2026-10-22",
-  "runtime_version": "0.3.0",
+  "date": "2026-10-23",
+  "runtime_version": "0.4.0",
   "pilot_capacity": 6,
   "software_ready": true,
   "physical_devices_connected": 0,
   "hardware_test_performed": false,
-  "browser_http_demo": "passed",
-  "console_browser_mission": "passed",
-  "console_reload_regression": "covered by automated test",
-  "operator_cli_outside_project": "passed",
-  "linux_desktop_real_test": "passed",
+  "browser_http_demo": "automated test passed",
+  "console_browser_mission": "passed on isolated loopback broker; Chromium lease filled the local Open Phone Use demo and displayed Bonjour Open Phone Use",
+  "console_reload_regression": "passed; active lease and screenshot restored after reload",
+  "console_release": "passed; release returned to zero active sessions",
+  "android_job_without_device": "refused; no Android provider configured",
+  "console_screenshot": "outputs/open-phone-use-console-v04.png",
+  "operator_cli_outside_project": "installed 0.4.0 wheel from checkout; automated test passed",
+  "linux_desktop_real_test": "passed in full test suite",
+  "cvdr_create_help_compiled": true,
+  "cuttlefish_vm_created": false,
+  "cvdr_verified_commit": "4de2e0453682f91d6beb39b29f7c3fb06b9cb094",
   "automated_tests": {
-    "passed": 52,
-    "skipped": 0,
+    "passed": 108,
+    "skipped": 2,
+    "warning_count": 1,
     "docker_enabled": true
   },
-  "next_test": "2 Androids, then up to 6, on 2026-10-23"
+  "next_test": "opt-in Android and Cuttlefish hardware recipes"
 }

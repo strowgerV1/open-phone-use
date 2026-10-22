@@ -118,6 +118,18 @@ def doctor(args):
     checks['capacity'] = read_capacity()
     checks['adb_installed'] = bool(shutil.which('adb'))
     try:
+        from importlib.metadata import version
+        checks['uiautomator2'] = version('uiautomator2')
+    except Exception:
+        checks['uiautomator2'] = None
+    scrcpy = shutil.which('scrcpy')
+    checks['scrcpy'] = None
+    if scrcpy:
+        try:
+            result = subprocess.run([scrcpy, '--version'], capture_output=True, text=True, timeout=5)
+            checks['scrcpy'] = result.stdout.strip().splitlines()[0][:120] if result.returncode == 0 else 'installed_version_unknown'
+        except (OSError, subprocess.TimeoutExpired): checks['scrcpy'] = 'installed_version_unknown'
+    try:
         connected = adb_devices()
         checks['adb'] = 'ok'
     except RuntimeError as e:
@@ -159,21 +171,81 @@ def enroll(args):
     read_capacity(limit)
     serials = {d['serial'] for d in current}
     ids = {d['id'] for d in current}
-    added = []
+    added, updated = [], []
+    if args.provider == 'cuttlefish' and not args.serial:
+        raise RuntimeError('Cuttlefish enrollment requires an explicit --serial')
     for d in sorted(connected, key=lambda x: x['serial']):
-        if d['serial'] in serials or len(current) >= limit:
+        existing = next((item for item in current if item['serial'] == d['serial']), None)
+        if existing:
+            if not args.update:
+                continue
+            if existing['owners'] != [args.owner]:
+                raise RuntimeError('Updating automation requires a device dedicated to the selected owner')
+            existing['provider'], existing['automation'] = args.provider, args.automation
+            if args.provider == 'cuttlefish':
+                meta = {key:value for key,value in [('host',args.host),('group',args.group),('instance',args.instance)] if value}
+                if meta: existing['cuttlefish'] = meta
+                else: existing.pop('cuttlefish', None)
+            else:
+                existing.pop('cuttlefish', None)
+            updated.append(existing['id'])
+            continue
+        if len(current) >= limit:
             continue
         n = 1
         while f'phone-{n:02}' in ids:
             n += 1
         entry = {'id': f'phone-{n:02}', 'serial': d['serial'], 'owners': [args.owner]}
+        if args.provider != 'physical' or args.automation != 'adb':
+            entry.update(provider=args.provider, automation=args.automation)
+        if args.provider == 'cuttlefish':
+            meta = {key:value for key,value in [('host',args.host),('group',args.group),('instance',args.instance)] if value}
+            if meta: entry['cuttlefish'] = meta
         current.append(entry)
         serials.add(entry['serial']); ids.add(entry['id']); added.append(entry['id'])
     create_app(keys=configured, devices=current)
     private_json(inventory_path(), current)
-    print(json.dumps({'added': added, 'registered': len(current), 'authorized_connected': len(connected),
+    print(json.dumps({'added': added, 'updated': updated, 'registered': len(current), 'authorized_connected': len(connected),
                       'note': 'Existing IDs and ACL preserved. Restart the broker after enrollment.'}, indent=2))
     return 0 if connected else 2
+
+
+def reconcile(args):
+    """Operator attestation that a quarantined device was physically checked."""
+    if not args.confirm_inspected:
+        raise RuntimeError('Add --confirm-inspected only after physically checking this device and its broker')
+    import fcntl
+    lock_path = Path('data/broker.lock')
+    lock_path.parent.mkdir(parents=True, exist_ok=True)
+    with lock_path.open('a') as lock:
+        try: fcntl.flock(lock.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError:
+            raise RuntimeError('Stop the broker before reconciling its quarantine registry') from None
+        audit_path = Path(os.environ.get('ENV_AUDIT_PATH', 'data/audit.jsonl'))
+        path = Path(os.environ.get('ENV_QUARANTINE_PATH', str(audit_path.with_name('uncertain-devices.json'))))
+        try: entries = json.loads(path.read_text()) if path.exists() else {}
+        except (OSError, ValueError): raise RuntimeError('Cannot read quarantine registry') from None
+        if args.device_id not in entries:
+            raise RuntimeError('Device is not present in the uncertain-action quarantine')
+        entries.pop(args.device_id)
+        private_json(path, entries)
+        print(json.dumps({'device_id': args.device_id, 'status': 'operator_reconciled',
+                          'note': 'Quarantine cleared after operator inspection; this does not undo a past action.'}, indent=2))
+    return 0
+
+
+def cuttlefish(args):
+    from .cuttlefish import cvdr_list, cvdr_create, doctor_report
+    if args.cuttlefish_command == 'doctor':
+        report = doctor_report()
+        print(json.dumps(report, indent=2, ensure_ascii=False))
+        return 0 if report.get('kvm_read_write') else 2
+    if args.cuttlefish_command == 'list':
+        result = cvdr_list(args.config)
+    else:
+        result = cvdr_create(args.config, args.host, args.build_id, args.build_target, args.count)
+    print(result if isinstance(result, str) else json.dumps(result, indent=2, ensure_ascii=False))
+    return 0
 
 
 def serve(args):
@@ -297,11 +369,26 @@ def main(argv=None):
     p = sub.add_parser('enroll', help='Register authorized connected Androids, without controlling them')
     p.add_argument('--owner', default='alice'); p.add_argument('--serial', action='append')
     p.add_argument('--limit', type=int)
+    p.add_argument('--provider', choices=('physical','cuttlefish'), default='physical')
+    p.add_argument('--automation', choices=('adb','uiautomator2'), default='adb')
+    p.add_argument('--host'); p.add_argument('--group'); p.add_argument('--instance')
+    p.add_argument('--update', action='store_true', help='Explicitly update backend metadata of an enrolled dedicated phone')
     p = sub.add_parser('serve', help='Start one local broker')
     p.add_argument('--capacity', type=int); p.add_argument('--port', type=int, default=8876)
     p.add_argument('--open', action='store_true', help='Open console with a one-time local connection code')
     p.add_argument('--owner', help='Console owner (default alice, otherwise first configured owner)')
     sub.add_parser('desktop', help='Build and enable the Linux desktop locally')
+    p = sub.add_parser('reconcile', help='Operator-only: clear a device quarantine after physical inspection')
+    p.add_argument('--device-id', required=True); p.add_argument('--confirm-inspected', action='store_true', required=True)
+    p = sub.add_parser('cuttlefish', help='Operate a pre-provisioned Cuttlefish pool')
+    cf = p.add_subparsers(dest='cuttlefish_command', required=True)
+    cf.add_parser('doctor', help='Check Linux KVM host prerequisites')
+    p2 = cf.add_parser('list', help='Run cvdr list using an existing config')
+    p2.add_argument('--config', required=True)
+    p2 = cf.add_parser('create', help='Create a CVD group with an explicit build')
+    p2.add_argument('--config', required=True); p2.add_argument('--host', required=True)
+    p2.add_argument('--build-id', required=True); p2.add_argument('--build-target', required=True)
+    p2.add_argument('--count', type=int, default=1)
     p = sub.add_parser('smoke', help='Explicit hardware test: reserve, HOME, capture, release')
     p.add_argument('--owner', default='alice'); p.add_argument('--limit', type=int, default=6)
     p.add_argument('--url', default='http://127.0.0.1:8876')
@@ -311,7 +398,8 @@ def main(argv=None):
         if args.command != 'init':
             load_env(args.env_file)
         return {'init': initialize, 'doctor': doctor, 'enroll': enroll,
-                'serve': serve, 'smoke': smoke, 'desktop': prepare_desktop}[args.command](args)
+                'serve': serve, 'smoke': smoke, 'desktop': prepare_desktop,
+                'reconcile':reconcile, 'cuttlefish':cuttlefish}[args.command](args)
     except (RuntimeError, OSError) as e:
         print('Erreur : ' + str(e), file=sys.stderr)
         return 2

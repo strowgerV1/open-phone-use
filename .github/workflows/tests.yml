@@ -9,7 +9,8 @@ jobs:
         with:
           python-version: '3.13'
       - run: pip install -r requirements.lock
-      - run: pip install '.[test]'
+      - run: pip install -r requirements-android.lock
+      - run: pip install '.[test,android]'
       - run: strowger --help
         working-directory: /tmp
       - run: playwright install --with-deps chromium

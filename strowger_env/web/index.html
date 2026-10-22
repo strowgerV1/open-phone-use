@@ -16,6 +16,8 @@
 <section class="section-heading"><div><span class="eyebrow">VOTRE ESPACE DE TRAVAIL</span><h2>Sessions réservées</h2></div><span class="muted">Expiration automatique après 10 min · renouvelable</span></section>
 <p id="no-sessions" class="empty">Réservez un environnement pour commencer. Aucun appareil simulé n’est affiché ici.</p>
 <div id="sessions" class="sessions"></div>
+<section class="section-heading"><div><span class="eyebrow">SCÉNARIOS DÉCLARATIFS</span><h2>Jobs Android</h2></div><span class="muted">Actions autorisées du broker · résultat sans captures</span></section>
+<section class="panel job-panel"><form id="job-form"><label for="job-device">Téléphone (optionnel)</label><input id="job-device" name="device_id" placeholder="Attribution automatique"><label for="job-steps">Étapes JSON</label><textarea id="job-steps" name="steps" rows="5" required>[{"action":"key","args":{"key":"HOME"}},{"action":"screenshot","args":{}}]</textarea><div class="row"><input name="name" maxlength="80" placeholder="Nom du scénario (facultatif)"><button type="submit">Lancer le job</button></div><p class="muted">Les jobs n’acceptent que les actions publiées par le broker. Les captures ne sont pas conservées dans leur historique.</p></form><div id="jobs" class="job-list"></div></section>
 <section class="panel guide"><div><span class="eyebrow">DEMAIN, AVEC LES TÉLÉPHONES</span><h2>Branchez. Autorisez. Enregistrez.</h2></div><p>Activez le débogage USB, acceptez l’autorisation sur chaque Android, puis choisissez « Enregistrer » dans le lanceur et redémarrez le serveur. Vos appareils apparaîtront dans le parc.</p><a href="/docs" target="_blank" rel="noopener">Explorer l’API →</a></section>
 </div>
 <p id="notice" role="status" hidden></p>

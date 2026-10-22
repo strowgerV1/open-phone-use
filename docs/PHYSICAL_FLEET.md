@@ -16,14 +16,18 @@ Source de procédure : [Android Debug Bridge, documentation officielle](https://
 
 Depuis le dossier du projet, après chargement des clés créées par `scripts/init_env.py`, utiliser les noms d'agents présents dans `ENV_API_KEYS` :
 
-```sh
-export ENV_ANDROID_DEVICES='[{"id":"phone-01","serial":"REMPLACER_SERIAL_1","owners":["agent-demo"]},{"id":"phone-02","serial":"REMPLACER_SERIAL_2","owners":["agent-demo"]}]'
-uvicorn strowger_env.server:create_app --factory --host 127.0.0.1 --port 8876
+```json
+[
+  {"id":"phone-01","serial":"REMPLACER_SERIAL_1","owners":["agent-demo"]},
+  {"id":"phone-02","serial":"REMPLACER_SERIAL_2","owners":["agent-demo"]}
+]
 ```
+
+Enregistrer cet inventaire dans `data/fleet.json` avec permissions privées et définir `ENV_ANDROID_DEVICES_FILE=data/fleet.json`. Pour des clients distincts, attribuer un seul owner par appareil ; voir [Exploiter une flotte par client](CLIENT_FARMS.md).
 
 Remplacer `agent-demo` par le nom réellement configuré. Les identifiants sont uniques ; un serial ne peut figurer deux fois. Seuls les serials enregistrés sont adressables. Aucun shell générique, installation APK, accès aux fichiers hôte ou commande ADB fournie par l'agent n'est exposé. Les actions autorisées sont capture/observation, tap et touches HOME/BACK/ENTER.
 
-`ENV_ANDROID_SERIAL` reste compatible : il crée `android-01`, accessible à tous les propriétaires de clés configurés. Pour une séparation par propriétaire, utiliser l'inventaire explicite `ENV_ANDROID_DEVICES` et ses listes `owners`.
+`ENV_ANDROID_SERIAL` reste compatible : il crée `android-01`, accessible à tous les propriétaires de clés configurés. Les entrées historiques `id`, `serial`, `owners` restent valides ; les champs `provider` et `automation` sont facultatifs (`physical` et `adb` par défaut). Pour UIAutomator2, installer l'extra Android et inscrire explicitement `"automation":"uiautomator2"`. Ce backend ajoute hiérarchie et sélecteurs structurés ; il ne permet pas XPath ni commandes arbitraires.
 
 ```python
 from strowger_env.client import Runtime
@@ -45,7 +49,7 @@ Sans `device_id`, le broker choisit le premier appareil autorisé, libre et acce
 - `available` : vérification ADB réussie lors de la requête, sans garantie de disponibilité future.
 - `leased` : lease détenue par le demandeur ; `unavailable` si l'appareil partagé est occupé par un autre propriétaire.
 - `offline_or_unauthorized` : ADB absent, erreur, appareil déconnecté ou non autorisé.
-- `quarantined` : nettoyage d'une lease du demandeur en échec ; aucune nouvelle allocation avant nettoyage réussi.
+- `quarantined` : l'appareil est en quarantaine de nettoyage ou d'action incertaine ; aucune nouvelle allocation n'est possible tant qu'un opérateur ne l'a pas réconcilié.
 
 `POST /v1/leases` accepte `{"kind":"phone","device_id":"phone-01","ttl":120}`. Un identifiant absent ou non autorisé retourne 404 ; appareil occupé ou capacité épuisée : 409 ; appareil autorisé mais inaccessible : 503. Les actions inconnues et arguments invalides retournent 422.
 
@@ -53,9 +57,9 @@ Sans `device_id`, le broker choisit le premier appareil autorisé, libre et acce
 
 Une libération ou expiration vérifie ADB et revient à HOME. **HOME n'efface rien** : applications, sessions, notifications, comptes et fichiers persistent. Ne pas partager un téléphone entre clients sans un processus opérateur de remise à zéro et de vérification encore à construire. Pour le pilote, attribuer chaque appareil à un seul propriétaire.
 
-Lorsqu'une action téléphone échoue, la lease est fermée. Si le retour HOME échoue, l'état devient `cleanup_failed`, le serial reste réservé et n'est pas réattribué. Le worker retente le nettoyage ; une reconnexion réussie permet de libérer l'appareil. Un agent doit obtenir une nouvelle lease, l'ancienne ne reprend pas son activité. Un retry de DELETE peut aussi terminer le nettoyage. Aucune réinitialisation, suppression de données ou restauration d'image n'est annoncée.
+Lorsqu'une action téléphone échoue, la lease est fermée. Si le retour HOME échoue, l'état devient `cleanup_failed`, le serial reste réservé et n'est pas réattribué. Un retry de DELETE peut retenter le nettoyage ; un agent doit obtenir une nouvelle lease, l'ancienne ne reprend pas son activité. Si le résultat d'une action mutante est incertain après timeout, annulation ou crash du worker, le device est bloqué dans `data/uncertain-devices.json` même si HOME réussit ensuite. Après inspection physique, un opérateur peut lever cette quarantaine avec `strowger reconcile --device-id phone-01 --confirm-inspected`. Cette commande exige l'arrêt du broker et une attestation explicite ; aucun endpoint agent ne l'expose. Aucune réinitialisation, suppression de données ou restauration d'image n'est annoncée.
 
-Le registre est en mémoire : ne lancer **ni plusieurs workers, ni deux brokers sur les mêmes appareils**, et ne redémarrer qu'après réconciliation manuelle des téléphones. Après crash, l'exclusivité précédente et les quarantaines ne sont pas persistées. Les limites TTL et de commande bornent une requête, mais ne garantissent pas l'annulation d'une action déjà reçue par le téléphone. Ce pilote local ne constitue pas un service cloud public multi-client.
+Le registre des leases reste en mémoire : ne lancer **ni plusieurs workers, ni deux brokers sur les mêmes appareils**. Les quarantaines d'action incertaine sont persistées, mais les leases actives ne le sont pas ; après un crash, inspecter les appareils et réconcilier les opérations incertaines avant de relancer la flotte. Les limites TTL et de commande bornent une requête, mais ne garantissent pas l'annulation d'une action déjà reçue par le téléphone. Ce pilote local ne constitue pas un service cloud public multi-client.
 
 ## Recette matérielle à exécuter avant une offre
 

@@ -85,6 +85,7 @@ class Android:
 
     def __init__(self, serial):
         self.serial = serial
+        self.uncertain = False
 
     async def command(self, *args):
         proc = await asyncio.create_subprocess_exec('adb', '-s', self.serial, *args,
@@ -94,8 +95,12 @@ class Android:
         except BaseException:
             proc.kill()
             await proc.wait()
+            if args and args[0] == 'shell' and len(args) > 1 and args[1] in ('input', 'monkey'):
+                self.uncertain = True
             raise
         if proc.returncode:
+            if args and args[0] == 'shell' and len(args) > 1 and args[1] in ('input', 'monkey'):
+                self.uncertain = True
             raise RuntimeError('ADB command failed')
         return out
 
@@ -138,7 +143,10 @@ class Android:
 
     async def close(self):
         # Return to HOME only; this does not clear applications or user data.
-        await self.start()
+        # Call the ADB readiness check directly. Provider subclasses may have
+        # slow startup hooks (worker creation or guest boot) that must not run
+        # again during teardown.
+        await Android.start(self)
         await self.command('shell', 'input', 'keyevent', 'KEYCODE_HOME')
 
 

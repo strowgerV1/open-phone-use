@@ -1,4 +1,4 @@
-# Open Phone Use · 0.3.0
+# Open Phone Use · 0.4.0
 
 **Un agent réserve un environnement, agit, puis le libère.**
 
@@ -36,11 +36,12 @@ Les clés, inventaires USB privés, captures de futurs appareils et journaux d�
 
 ## Ce qui fonctionne
 
-| Ressource | Implémentation | Validation locale du 22 octobre 2026 |
+| Ressource | Implémentation | Validation locale du 23 octobre 2026 |
 |---|---|---|
 | Browser | Chromium dédié à chaque lease ; navigation, observation, clic, saisie, capture | Mission réelle et séparation de deux sessions testées |
-| Desktop | Desktop Linux X11 dans Docker ; capture, clic, texte, touches | Création, capture PNG, saisie et suppression testées |
-| Phone | Flotte Android enregistrée, attribution exclusive par appareil, inventaire autorisé et ADB | tests de flotte simulée ; aucun appareil connecté pour validation matérielle |
+| Desktop | Desktop Linux X11 dans Docker ; capture, clic, texte, touches | Validation héritée 0.3 ; test opt-in non exécuté pour 0.4.0 |
+| Phone | Android ADB ou UIAutomator2, actions structurées, exclusivité et quarantaine des mutations incertaines | providers factices vérifiés ; aucun appareil connecté pour validation matérielle |
+| Cuttlefish | Pool déjà provisionné via cvdr, accès ADB sous lease | providers factices vérifiés ; aucune VM créée ni hôte KVM local |
 | iOS, Windows VM, portique robotisé | À développer | Non disponibles |
 
 Le site dans `site/` est une **maquette locale rebrandée de PhoneUse**, demandée pour étude visuelle. Ses ressources tierces, sa police, son modèle 3D et son code ne sont **pas couverts par notre licence MIT**. Les tarifs, la flotte et les performances montrés sont ceux de la maquette source, pas des services STROWGER disponibles. L’utilisateur a confirmé disposer des autorisations de réutilisation pour cette publication ; cela ne relicencie pas ces éléments sous MIT. Voir `site/NOTICE.md`.
@@ -132,7 +133,7 @@ with runtime.phone.acquire(ttl=60) as lease:
     lease.act("key", key="BACK")
 ```
 
-Plusieurs téléphones peuvent avoir chacun une lease exclusive. Pour configurer les serials, les permissions et le banc USB, suivre le [guide flotte physique](docs/PHYSICAL_FLEET.md). La libération revient à HOME sans réinitialiser les applications ni les données. Pas de wipe automatisé. ADB contrôle le téléphone ; cette version n’utilise pas de robot physique et ne promet aucune « indétectabilité ».
+Plusieurs téléphones peuvent avoir chacun une lease exclusive. UIAutomator2 est facultatif (`pip install '.[android]'`) et expose une hiérarchie bornée et des sélecteurs strictement structurés. Les leases peuvent lancer un viewer scrcpy local en lecture seule si l’opérateur active `ENV_SCRCPY_ENABLED=1`. Les scénarios déterministes utilisent les jobs déclaratifs; un agent avec modèle externe utilise `AsyncRuntime` et garde la décision dans son propre client. Aucun LLM n’est inclus. Pour les détails de flotte, clés dédiées, hubs, tunnel privé et limites de jobs, lire [le guide clients et flottes](docs/CLIENT_FARMS.md) et [le guide Android physique](docs/PHYSICAL_FLEET.md). La libération revient à HOME sans réinitialiser les applications ni les données.
 
 ## Tester
 
@@ -141,7 +142,7 @@ pytest -q
 ENV_DESKTOP_TEST=1 pytest -q tests/test_desktop.py
 ```
 
-La suite vérifie aussi la connexion console, le cookie HttpOnly, le refus des origines tierces, le code à usage unique et le cloisonnement entre propriétaires. La suite navigateur exige Chromium installé. Le test desktop est désactivé par défaut ; il exige Docker et l’image construite. Le CI exécute le protocole et la mission Chromium, mais pas Docker ni Android.
+La suite vérifie aussi les routes jobs, les ACL, les annulations, les quarantaines et les providers simulés UIAutomator2, scrcpy et Cuttlefish. Le test desktop réel est désactivé par défaut ; il exige Docker et l’image construite. Les tests Android et Cuttlefish sur matériel sont opt-in et ne sont pas déclarés réussis dans cette livraison.
 
 ## Explorer la maquette
 
@@ -155,6 +156,8 @@ Ouvrir <http://127.0.0.1:4173>. Les animations utilisent les ressources récupé
 ## Documentation
 
 - [Flotte Android physique et recette hardware](docs/PHYSICAL_FLEET.md)
+- [Exploiter une flotte par client](docs/CLIENT_FARMS.md)
+- [Cuttlefish préprovisionné](docs/CUTTLEFISH.md)
 - [Protocole et intégration](docs/PROTOCOL.md)
 - [Architecture, limites et passage au cloud](docs/ARCHITECTURE.md)
 - [Projets consultés et attribution](docs/SOURCES.md)
