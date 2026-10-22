@@ -1,0 +1,70 @@
+@font-face {
+  font-family: 'Geist Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(google-7.ttf) format('truetype');
+}
+@font-face {
+  font-family: 'Geist Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(google-9.ttf) format('truetype');
+}
+@font-face {
+  font-family: 'Geist Mono';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(google-0.ttf) format('truetype');
+}
+@font-face {
+  font-family: 'Gochi Hand';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(google-5.ttf) format('truetype');
+}
+@font-face {
+  font-family: 'Host Grotesk';
+  font-style: normal;
+  font-weight: 300;
+  font-display: swap;
+  src: url(google-1.ttf) format('truetype');
+}
+@font-face {
+  font-family: 'Host Grotesk';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(google-3.ttf) format('truetype');
+}
+@font-face {
+  font-family: 'Host Grotesk';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(google-4.ttf) format('truetype');
+}
+@font-face {
+  font-family: 'Host Grotesk';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url(google-6.ttf) format('truetype');
+}
+@font-face {
+  font-family: 'Host Grotesk';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(google-8.ttf) format('truetype');
+}
+@font-face {
+  font-family: 'Host Grotesk';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url(google-2.ttf) format('truetype');
+}

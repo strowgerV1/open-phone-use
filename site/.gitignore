@@ -1,0 +1,5 @@
+node_modules/
+dist/
+.openai/deploy/
+.openai/cache/
+.DS_Store

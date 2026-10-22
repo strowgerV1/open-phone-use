@@ -1,0 +1,4 @@
+/* Local study notice. Original visual tokens are otherwise preserved. */
+.prototype-notice{position:fixed;z-index:1000;bottom:12px;left:50%;transform:translateX(-50%);padding:7px 13px;border-radius:99px;background:#131517eb;color:#f2f1ec;font:10px/1.5 'Geist Mono',monospace;box-shadow:0 3px 18px #0002;white-space:nowrap;text-decoration:none;backdrop-filter:blur(8px)}
+.prototype-notice:hover{background:#b93306}
+@media(max-width:480px){.prototype-notice{font-size:8px;bottom:8px;padding:5px 9px}}

@@ -1,0 +1,111 @@
+from concurrent.futures import ThreadPoolExecutor
+import pytest
+from fastapi.testclient import TestClient
+from strowger_env.server import create_app
+from strowger_env.adapters import Android
+
+KEYS = {'alice': 'a'*32, 'bob': 'b'*32}
+A = {'Authorization': 'Bearer '+KEYS['alice']}
+B = {'Authorization': 'Bearer '+KEYS['bob']}
+DEVICES = [{'id':'phone-01','serial':'USB001','owners':['alice']},
+           {'id':'phone-02','serial':'USB002','owners':['alice']},
+           {'id':'private','serial':'USB003','owners':['bob']}]
+
+class Phone:
+    actions = Android.actions
+    online = {'USB001':True,'USB002':True,'USB003':True}
+    def __init__(self, serial): self.serial = serial
+    async def start(self):
+        if not self.online[self.serial]: raise RuntimeError('offline')
+    async def act(self, action, args):
+        await self.start()
+        if action not in self.actions: raise ValueError()
+        return {'ok':True}
+    async def close(self): await self.start()
+
+@pytest.fixture
+def client(tmp_path):
+    Phone.online = dict.fromkeys(Phone.online, True)
+    with TestClient(create_app(KEYS, audit_path=tmp_path/'a', android_factory=Phone, devices=DEVICES)) as c:
+        yield c
+
+def acquire(c, device=None):
+    return c.post('/v1/leases', headers=A, json={'kind':'phone', **({'device_id':device} if device else {})})
+
+def test_two_devices_and_atomic_exclusivity(client):
+    with ThreadPoolExecutor(max_workers=4) as pool:
+        responses = list(pool.map(lambda _: acquire(client), range(4)))
+    assert sorted(r.status_code for r in responses) == [201,201,409,409]
+    assert {r.json()['device_id'] for r in responses if r.status_code == 201} == {'phone-01','phone-02'}
+
+def test_selected_device_and_listing_privacy(client):
+    assert client.get('/v1/devices').status_code == 401
+    assert [d['id'] for d in client.get('/v1/devices', headers=A).json()['devices']] == ['phone-01','phone-02']
+    assert acquire(client,'private').status_code == 404
+    assert acquire(client,'UNREGISTERED_SERIAL').status_code == 404
+    d=acquire(client,'phone-02').json()
+    assert d['device_id'] == 'phone-02'
+    assert acquire(client,'phone-02').status_code == 409
+    listing=client.get('/v1/devices',headers=B).text
+    for forbidden in ['USB00','phone-02',d['id'],d['lease_token'],'alice']:
+        assert forbidden not in listing
+
+def test_disconnect_quarantines_and_recovers(client):
+    d=acquire(client,'phone-01').json()
+    headers={**A,'X-Lease-Token':d['lease_token']}
+    url='/v1/leases/'+d['id']
+    Phone.online['USB001']=False
+    assert client.post(url+'/actions',headers=headers,json={'action':'observe'}).status_code == 502
+    assert client.get(url,headers=headers).json()['state'] == 'cleanup_failed'
+    assert acquire(client,'phone-01').status_code == 409
+    assert client.delete(url,headers=headers).status_code == 503
+    Phone.online['USB001']=True
+    assert client.delete(url,headers=headers).json()['state'] == 'released'
+    assert acquire(client,'phone-01').status_code == 201
+
+def test_offline_fallback_and_refusal(client):
+    Phone.online['USB001']=False
+    assert acquire(client,'phone-01').status_code == 503
+    assert acquire(client).json()['device_id'] == 'phone-02'
+    assert client.post('/v1/leases',headers=A,json={'kind':'browser','device_id':'phone-01'}).status_code == 422
+
+@pytest.mark.parametrize('devices', [DEVICES+[DEVICES[0]], [{'id':'x','serial':'-bad','owners':['alice']}], [{'id':'x','serial':'ok','owners':[]}], [{'id':'x','serial':'ok','owners':['unknown']}], {}])
+def test_invalid_inventory(tmp_path,devices):
+    with pytest.raises(RuntimeError):
+        create_app(KEYS,audit_path=tmp_path/'a',devices=devices)
+
+def test_legacy_serial(tmp_path,monkeypatch):
+    Phone.online['USB001']=True
+    monkeypatch.setenv('ENV_ANDROID_SERIAL','USB001')
+    monkeypatch.delenv('ENV_ANDROID_DEVICES',raising=False)
+    with TestClient(create_app(KEYS,audit_path=tmp_path/'a',android_factory=Phone)) as c:
+        assert acquire(c).json()['device_id'] == 'android-01'
+
+def test_android_commands_are_scoped_and_restricted():
+    import asyncio
+    calls=[]
+    class Recording(Android):
+        async def command(self,*args):
+            calls.append((self.serial,args))
+            return b'device' if args == ('get-state',) else b'png'
+    async def check():
+        phone=Recording('USB001')
+        await phone.start()
+        await phone.act('tap',{'x':10,'y':20})
+        await phone.close()
+        for action,args in [('shell',{}),('key',{'key':'POWER'}),('tap',{'x':'1;rm','y':0})]:
+            with pytest.raises(ValueError): await phone.act(action,args)
+    asyncio.run(check())
+    assert all(serial=='USB001' for serial,_ in calls)
+    assert calls[-1][1] == ('shell','input','keyevent','KEYCODE_HOME')
+
+
+def test_shared_device_hides_other_tenant_lease(tmp_path):
+    Phone.online['USB001']=True
+    devices=[{'id':'shared','serial':'USB001','owners':['alice','bob']}]
+    with TestClient(create_app(KEYS,audit_path=tmp_path/'a',android_factory=Phone,devices=devices)) as c:
+        d=acquire(c,'shared').json()
+        assert c.get('/v1/devices',headers=B).json() == {'devices':[{'id':'shared','kind':'phone','state':'unavailable'}]}
+        assert c.post('/v1/leases',headers=B,json={'kind':'phone','device_id':'shared'}).status_code == 409
+        stolen={**B,'X-Lease-Token':d['lease_token']}
+        assert c.get('/v1/leases/'+d['id'],headers=stolen).status_code == 404

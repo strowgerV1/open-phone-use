@@ -1,0 +1,1245 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<script>try{var t=new URLSearchParams(location.search).get("theme")||localStorage.getItem("pu-theme");if(t==="dark"||t==="light")document.documentElement.dataset.theme=t;}catch(e){}</script>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>STROWGER: Phones for AI agents</title>
+<meta name="description" content="Give your agent a phone. Cloud Android phones for scale, real iPhones tapped by a robot when your agent has to be undetectable. One API, one MCP server, any app.">
+<meta name="theme-color" content="#F2F1EC">
+
+
+
+
+
+
+
+
+
+
+<link rel="icon" href="/assets/brand/favicon-48.png" sizes="48x48" type="image/png">
+<link rel="icon" href="/assets/brand/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/assets/brand/apple-touch-icon.png">
+<link rel="preload" href="assets/fonts/season-mix-medium.woff2" as="font" type="font/woff2" crossorigin>
+<!-- the 1.2 MB model is fetched up front only on desktop-class devices on a fast link; elsewhere machine.js fetches it when the hero mounts, so it never competes with the CSS and fonts -->
+<script>try{var c=navigator.connection||{};if(!c.saveData&&!/2g|3g/.test(c.effectiveType)&&!(navigator.deviceMemory<=2)&&matchMedia("(hover:hover) and (pointer:fine) and (min-width:901px)").matches)document.head.append(Object.assign(document.createElement("link"),{rel:"preload",as:"fetch",crossOrigin:"anonymous",href:"assets/model/phoneuse.glb"}));}catch(e){}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="assets/fonts/google-fonts.css" rel="stylesheet">
+<script type="importmap">{"imports":{"three":"./assets/vendor/three/three.module.min.js","three/addons/":"./assets/vendor/three/addons/"}}</script>
+<!-- the hero's modules, fetched in parallel instead of one round trip after another (main.js imports them) -->
+<link rel="modulepreload" href="js/core.js">
+<link rel="modulepreload" href="js/nav.js">
+<link rel="modulepreload" href="js/hero.js">
+<link rel="modulepreload" href="js/phone-screen.js">
+<link rel="modulepreload" href="js/machine.js">
+<link rel="stylesheet" href="styles.css">
+<meta name="robots" content="noindex,nofollow"><link rel="stylesheet" href="/rebrand.css"></head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="nv" data-module="nav">
+  <div class="nv-bar">
+    <a class="nv-logo" href="#top" aria-label="strowger home">
+      <svg viewBox="19 10 70 98" aria-hidden="true"><mask id="pu-mark-gap"><rect width="120" height="130" fill="#fff"/><path d="M64 13A29.48 29.48 0 0 0 86 35A29.48 29.48 0 0 0 64 57A29.48 29.48 0 0 0 42 35A29.48 29.48 0 0 0 64 13Z" fill="#000" stroke="#000" stroke-width="9.2" stroke-linejoin="round"/></mask><path d="M36.3 25.7H62.5A10.3 10.3 0 0 1 72.8 36V91.1A10.3 10.3 0 0 1 62.5 101.4H36.3A10.3 10.3 0 0 1 26 91.1V36A10.3 10.3 0 0 1 36.3 25.7Z" fill="none" stroke="currentColor" stroke-width="9.2" mask="url(#pu-mark-gap)"/><path d="M64 13A29.48 29.48 0 0 0 86 35A29.48 29.48 0 0 0 64 57A29.48 29.48 0 0 0 42 35A29.48 29.48 0 0 0 64 13Z" fill="var(--signal)" stroke="var(--signal)" stroke-width="1.6" stroke-linejoin="round"/></svg>
+      <span>strowger</span>
+    </a>
+    <nav class="nv-links" aria-label="Primary">
+      <a href="#how">Product</a>
+      <a href="#use-cases">Use cases</a>
+      <a href="#pricing">Pricing</a>
+      <a href="/docs.html#">Docs</a>
+    </nav>
+    <div class="nv-actions">
+      <button class="nv-theme" type="button" aria-label="Dark theme" aria-pressed="false">
+        <svg class="ico nv-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M4.6 4.6l1.4 1.4M18 18l1.4 1.4M2.5 12h2M19.5 12h2M4.6 19.4 6 18M18 6l1.4-1.4"/></svg>
+        <svg class="ico nv-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg>
+      </button>
+      <a class="nv-demo" href="#book-a-call">Book a call</a>
+      <a class="btn btn--signal btn--sm" href="/docs.html#quickstart">Get started</a>
+      <button class="nv-menu" type="button" aria-expanded="false" aria-controls="nv-sheet" aria-label="Open menu">
+        <span></span><span></span>
+      </button>
+    </div>
+  </div>
+  <div class="nv-sheet" id="nv-sheet" hidden>
+    <a href="#how">Product</a>
+    <a href="#use-cases">Use cases</a>
+    <a href="#pricing">Pricing</a>
+    <a href="/docs.html#">Docs</a>
+    <a href="#book-a-call">Book a call</a>
+  </div>
+</header>
+<main id="main">
+<section class="hr" id="top" data-module="hero" aria-labelledby="hero-title">
+  <div class="hr-stage" aria-hidden="false">
+    <img class="hr-poster" src="assets/model/phoneuse-poster.webp" width="1600" height="1400" alt="" aria-hidden="true" decoding="async">
+    <canvas class="hr-canvas" role="img" aria-label="The STROWGER machine: a robot stylus tapping a real iPhone under an overhead camera"></canvas>
+    <span class="tape hr-tape" data-anchor="phone" aria-hidden="true">iPhone #07 · SF rack</span>
+    <div class="hr-note" data-anchor="camera" aria-hidden="true">
+      <svg viewBox="0 0 90 40"><path class="scribble" d="M86 30C66 34 40 32 22 22 15 18 10 13 6 8"/><path class="scribble" d="M4 19L5 7l12 1"/></svg>
+      <span class="hand">the agent’s eyes</span>
+    </div>
+  </div>
+
+  <div class="wrap hr-grid">
+    <div class="hr-copy">
+      <h1 class="t-hero hr-title" id="hero-title">
+        <span class="hr-line"><span>Your agent</span></span>
+        <span class="hr-line"><span>now has a</span></span>
+        <span class="hr-line"><span class="serif">phone.</span></span>
+      </h1>
+      <p class="t-lede hr-lede">Plug <span class="hr-nw"><span class="hr-chip"><img class="hr-chip-icon" src="assets/icons/claude.svg" width="18" height="18" alt="" aria-hidden="true">Claude Code</span></span> <span class="hr-nw"><span class="hr-chip"><img class="hr-chip-icon" src="assets/icons/codex.svg" width="18" height="18" alt="" aria-hidden="true">Codex</span></span> <span class="hr-nw">or <span class="hr-chip"><img class="hr-chip-icon hr-chip-icon--cursor" src="assets/icons/cursor.svg" width="18" height="18" alt="" aria-hidden="true">Cursor</span></span> <span class="hr-nw">into a phone</span> and automate any app, through MCP or our API.</p>
+      <div class="hr-ctas">
+        <a class="btn btn--ink" href="/docs.html#quickstart">Get started <svg class="ico arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        <button class="btn btn--ghost" type="button" data-copy-setup>
+          <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2.5"/><path d="M16 8V6.5A2.5 2.5 0 0 0 13.5 4h-7A2.5 2.5 0 0 0 4 6.5v7A2.5 2.5 0 0 0 6.5 16H8"/></svg>
+          <span data-label>Copy setup prompt</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="hr-log" role="group" aria-label="Live agent task on iPhone 15 Pro #07: when the driver is here, text the guest the plate number">
+    <p class="hr-log-head" aria-hidden="true"><span class="dot dot--live"></span>agent · iPhone 15 Pro #07<span class="hr-clock">00:00.0</span></p>
+    <p class="hr-log-task" aria-hidden="true"><b>❯</b> <span data-text="“When the driver is here, text the guest the plate number.”"></span></p>
+    <ol class="hr-steps" aria-hidden="true">
+      <li data-at="0.4" data-text="opened uber · read “driver is here” · 8KXL&nbsp;204"></li>
+      <li data-at="6.05" data-text="sent imessage “look for 8KXL&nbsp;204”"></li>
+      <li data-at="11.05" data-text="shared the ETA with the guest"></li>
+    </ol>
+  </div>
+</section>
+
+<section class="section wl" id="wall" data-module="wall" aria-labelledby="wall-title">
+  <div class="wrap">
+    <header class="wl-head">
+      <div class="eyebrow" data-reveal><b>01</b><i></i>The wall</div>
+      <h2 class="wl-title" id="wall-title" data-reveal style="--d:1">
+        Most of life runs on <span class="wl-tiles" aria-hidden="true"><span class="wl-slot"><span class="wl-flip"><i class="app app--tiktok"></i></span></span><span class="wl-slot"><span class="wl-flip"><i class="app app--uber"></i></span></span><span class="wl-slot"><span class="wl-flip"><i class="app app--zomato"></i></span></span></span>apps.<br class="wl-br">
+        The moment a task needs an app,<br class="wl-br"> your agent
+        <span class="wl-cold"><span class="wl-ghost">stops cold</span><span class="wl-typed" aria-hidden="true">stops cold</span></span>
+      </h2>
+    </header>
+
+    <div class="wl-stage">
+      <i class="wl-path-dash" aria-hidden="true"></i>
+      <div class="wl-rings" role="group" aria-label="Apps that only run on a phone. Choose one to see what your agent can do with it.">
+        <div class="wl-3d">
+          <!-- top ring: turns clockwise seen from above (front cards travel left to right).
+               Cards are listed in the order they reach the front; JS places them on the ring. -->
+          <div class="wl-ring" data-dir="1">
+            <button type="button" class="wl-c wl-c--m" data-app="uber" aria-label="Uber">
+              <span class="wl-f wl-uber">
+                <span class="wl-h"><i class="app app--uber"></i><span class="wl-hn">Uber</span><span class="wl-eta"><b>4</b> min</span></span>
+                <span class="wl-t">Driver arriving</span>
+                <span class="wl-route"><i class="wl-route-fill"></i><i class="wl-route-car"></i><i class="wl-route-end"></i></span>
+                <span class="wl-meta"><span>Toyota Camry · 8KXL 204</span><span>Pickup 9:41</span></span>
+              </span>
+            </button>
+            <button type="button" class="wl-c" data-app="messages" aria-label="Messages">
+              <span class="wl-f wl-f--light">
+                <span class="wl-h"><i class="app app--imessage"></i><span class="wl-hn">Messages</span></span>
+                <span class="wl-bubble">Your code is<b>382 019</b></span>
+                <span class="wl-s">From 32665 · now</span>
+              </span>
+            </button>
+            <button type="button" class="wl-c wl-c--m" data-app="whatsapp" aria-label="WhatsApp">
+              <span class="wl-f wl-wa">
+                <span class="wl-h"><i class="app app--whatsapp"></i><span class="wl-hn">WhatsApp</span><span class="wl-hm">3 unread</span></span>
+                <span class="wl-chat"><i class="wl-av" style="--c1:#F7A58C;--c2:#E2557A">M</i><span class="wl-chat-b"><b>Maya</b><span>Landed! Sharing my live location</span></span><em>2</em></span>
+                <span class="wl-chat"><i class="wl-av" style="--c1:#8EC5FF;--c2:#4A7BD8">D</i><span class="wl-chat-b"><b>Dad</b><span>Voice message · 0:24</span></span><em>1</em></span>
+              </span>
+            </button>
+            <button type="button" class="wl-c" data-app="instagram" aria-label="Instagram">
+              <span class="wl-f wl-ig">
+                <i class="wl-sun"></i><i class="wl-hill wl-hill--b"></i><i class="wl-hill wl-hill--a"></i>
+                <span class="wl-h"><i class="app app--instagram"></i><span class="wl-hn">maya.k</span></span>
+                <span class="wl-ig-cap"><b>New Reel</b>Big Sur · 2.1K likes</span>
+              </span>
+            </button>
+            <button type="button" class="wl-c" data-app="airbnb" aria-label="Airbnb">
+              <span class="wl-f wl-f--light wl-bnb">
+                <span class="wl-h"><i class="app app--airbnb"></i><span class="wl-hn">Airbnb</span></span>
+                <span class="wl-t">Check-in today</span>
+                <span class="wl-big">4821</span>
+                <span class="wl-s">Door code · from 3 PM</span>
+              </span>
+            </button>
+            <button type="button" class="wl-c wl-c--m" data-app="chase" aria-label="Chase">
+              <span class="wl-f wl-bank">
+                <span class="wl-h"><i class="app app--chase"></i><span class="wl-hn">Chase</span><span class="wl-hm">now</span></span>
+                <span class="wl-t">Approve this sign-in?</span>
+                <span class="wl-s">Chrome on macOS · San Francisco</span>
+                <span class="wl-btns"><i>Deny</i><i class="is-pri">Approve</i></span>
+              </span>
+            </button>
+            <button type="button" class="wl-c" data-app="tinder" aria-label="Tinder">
+              <span class="wl-f wl-tinder">
+                <span class="wl-h"><i class="app app--tinder"></i><span class="wl-hn">Tinder</span></span>
+                <span class="wl-pair"><i style="--c1:#FFC3A0;--c2:#FF7A8A"></i><i style="--c1:#A0C4FF;--c2:#7B61FF"></i></span>
+                <span class="wl-t">It’s a match</span>
+                <span class="wl-s">Priya · 3 km away</span>
+              </span>
+            </button>
+            <button type="button" class="wl-c" data-app="snapchat" aria-label="Snapchat">
+              <span class="wl-f wl-snap">
+                <span class="wl-h"><i class="app app--snapchat"></i><span class="wl-hn">Snapchat</span></span>
+                <span class="wl-big">3<small>new Snaps</small></span>
+                <span class="wl-snaps"><i style="--c:#F23C57"></i><i style="--c:#F23C57"></i><i style="--c:#9B55E0"></i></span>
+                <span class="wl-s">Riya, Sam and 1 more</span>
+              </span>
+            </button>
+          </div>
+
+          <!-- bottom ring: turns anti-clockwise (front cards travel right to left) -->
+          <div class="wl-ring wl-ring--b" data-dir="-1">
+            <button type="button" class="wl-c wl-c--m" data-app="zomato" aria-label="Zomato">
+              <span class="wl-f wl-f--light wl-zom">
+                <span class="wl-h"><i class="app app--zomato"></i><span class="wl-hn">Zomato</span><span class="wl-eta"><b>28</b> min</span></span>
+                <span class="wl-t">Your food is being prepared</span>
+                <span class="wl-steps"><i class="is-done"></i><i class="is-now"></i><i></i></span>
+                <span class="wl-meta"><span>Kebab House · 2 items</span><span>Arriving 9:58</span></span>
+              </span>
+            </button>
+            <button type="button" class="wl-c" data-app="tiktok" aria-label="TikTok">
+              <span class="wl-f wl-tt">
+                <span class="wl-h"><i class="app app--tiktok"></i><span class="wl-hn">TikTok</span></span>
+                <span class="wl-big">12.4K<small>views</small></span>
+                <svg class="wl-spark" viewBox="0 0 120 28" preserveAspectRatio="none"><path d="M0 26 C18 25 26 22 40 20 S62 18 74 12 98 6 120 2"/></svg>
+                <span class="wl-s">Your video is live</span>
+              </span>
+            </button>
+            <button type="button" class="wl-c" data-app="swiggy" aria-label="Swiggy">
+              <span class="wl-f wl-f--light wl-swg">
+                <span class="wl-h"><i class="app app--swiggy"></i><span class="wl-hn">Swiggy</span></span>
+                <span class="wl-t">Out for delivery</span>
+                <span class="wl-big">9<small>min</small></span>
+                <span class="wl-s">Instamart · 6 items</span>
+              </span>
+            </button>
+            <button type="button" class="wl-c wl-c--m" data-app="paytm" aria-label="Paytm">
+              <span class="wl-f wl-f--light wl-paytm">
+                <span class="wl-h"><i class="app app--paytm"></i><span class="wl-hn">Paytm</span><span class="wl-hm">UPI</span></span>
+                <span class="wl-t">Pay ₹420 to Sharma General Store</span>
+                <span class="wl-pin"><i class="is-on"></i><i class="is-on"></i><i class="is-on"></i><i class="is-on"></i><i></i><i></i></span>
+                <span class="wl-s">Enter UPI PIN · only on this phone</span>
+              </span>
+            </button>
+            <button type="button" class="wl-c" data-app="venmo" aria-label="Venmo">
+              <span class="wl-f wl-f--light wl-venmo">
+                <span class="wl-h"><i class="app app--venmo"></i><span class="wl-hn">Venmo</span></span>
+                <span class="wl-t">Sam paid you</span>
+                <span class="wl-big">$24.00</span>
+                <span class="wl-s">Pizza night · Friends</span>
+              </span>
+            </button>
+            <button type="button" class="wl-c" data-app="telegram" aria-label="Telegram">
+              <span class="wl-f wl-tg">
+                <span class="wl-h"><i class="app app--telegram"></i><span class="wl-hn">Telegram</span></span>
+                <span class="wl-t">Login code</span>
+                <span class="wl-code-n">52381</span>
+                <span class="wl-tag">In the app, not by SMS</span>
+              </span>
+            </button>
+            <button type="button" class="wl-c wl-c--m" data-app="google" aria-label="Google">
+              <span class="wl-f wl-goo">
+                <span class="wl-h"><i class="app app--google"></i><span class="wl-hn">Google</span><span class="wl-hm">now</span></span>
+                <span class="wl-t">Trying to sign in?</span>
+                <span class="wl-s">you@company.com · Chrome on macOS</span>
+                <span class="wl-match"><i>17</i><i class="is-pick">42</i><i>86</i></span>
+              </span>
+            </button>
+            <button type="button" class="wl-c" data-app="lyft" aria-label="Lyft">
+              <span class="wl-f wl-lyft">
+                <span class="wl-h"><i class="app app--lyft"></i><span class="wl-hn">Lyft</span></span>
+                <span class="wl-t">Scooter unlocked</span>
+                <span class="wl-big">0.8<small>km</small></span>
+                <span class="wl-s">Ride time 4:12</span>
+              </span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="wl-path" aria-hidden="true">
+        <svg class="wl-wire"><defs><linearGradient id="wl-wire-g" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="64"><stop offset="0" stop-color="#FF4F14" stop-opacity="0"/><stop offset="1" stop-color="#FF4F14"/></linearGradient></defs><path pathLength="1"/></svg>
+        <i class="wl-path-head"></i>
+        <p class="wl-note-hand hand">your agent, stuck here
+          <svg viewBox="0 0 90 40"><path class="scribble" d="M86 6C70 4 50 8 36 18S14 32 6 33"/><path class="scribble" d="M14 26 5 33l10 4"/></svg>
+        </p>
+      </div>
+
+      <p class="wl-can"><span class="wl-can-idle">Hover an app to see what your agent can do with it.</span><span class="wl-can-on" aria-live="polite" aria-atomic="true"><b>With STROWGER, your agent can:</b> <span class="wl-can-v"></span></span></p>
+
+      <ul class="wl-notes" aria-label="What the apps at the front of the rings are showing">
+        <li class="wl-n wl-n--1" style="--i:0">
+          <span class="wl-n-ico" aria-hidden="true"><i class="app app--imessage"></i></span>
+          <div class="wl-n-body">
+            <p class="wl-n-top"><span class="wl-n-app">Messages</span><span>now</span></p>
+            <p class="wl-n-title">Your Uber code is 4821</p>
+            <p class="wl-n-text">Share this PIN with your driver to start the trip.</p>
+          </div>
+        </li>
+        <li class="wl-n wl-n--2" style="--i:1">
+          <span class="wl-n-ico" aria-hidden="true"><i class="app app--uber"></i></span>
+          <div class="wl-n-body">
+            <p class="wl-n-top"><span class="wl-n-app">Uber</span><span>now</span></p>
+            <p class="wl-n-title">Driver arriving shortly</p>
+            <p class="wl-n-text">Grey Toyota Camry · 8KXL 204 is 1&nbsp;min away.</p>
+          </div>
+        </li>
+        <li class="wl-n wl-n--3" style="--i:2">
+          <span class="wl-n-ico" aria-hidden="true"><i class="app app--zomato"></i></span>
+          <div class="wl-n-body">
+            <p class="wl-n-top"><span class="wl-n-app">Zomato</span><span>now</span></p>
+            <p class="wl-n-title">Your food is being prepared</p>
+            <p class="wl-n-text">Arriving in 28 min · 2 items from Kebab House.</p>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="tn" id="how" data-module="turn" aria-labelledby="how-title">
+  <div class="tn-track">
+    <div class="tn-sticky">
+      <div class="tn-stage on-dark" data-nav="dark">
+        <canvas class="tn-rack" aria-hidden="true"></canvas>
+        <canvas class="tn-canvas" role="img" aria-label="Close-up of a real iPhone in the STROWGER machine, showing each step on its screen"></canvas>
+
+        <header class="tn-intro">
+          <div class="eyebrow"><b>02</b><i></i>The turn</div>
+          <h2 class="tn-title" id="how-title">So we gave agents <span class="serif">a phone.</span></h2>
+        </header>
+
+        <div class="wrap tn-layout">
+          <div class="tn-steps">
+            <p class="tn-kicker">Let’s see how simple it can be.</p>
+            <ol class="tn-list">
+              <li class="tn-step is-active" data-step="0">
+                <button class="tn-step-head" type="button" aria-current="step"><span class="tn-num">1</span>Choose your agent</button>
+                <div class="tn-body"><div class="tn-body-in">
+                  <ul class="tn-agents" aria-label="Agents that work with STROWGER">
+                    <li data-agent="Claude"><span class="app app--claude tn-tile" aria-hidden="true"></span>Claude</li>
+                    <li data-agent="Cursor"><span class="app app--cursor tn-tile" aria-hidden="true"></span>Cursor</li>
+                    <li data-agent="Codex"><span class="app app--codex tn-tile" aria-hidden="true"></span>Codex</li>
+                    <li data-agent="Windsurf"><span class="app app--windsurf tn-tile" aria-hidden="true"></span>Windsurf</li>
+                    <li data-agent="Python"><span class="app app--python tn-tile" aria-hidden="true"></span>Your code</li>
+                  </ul>
+                </div></div>
+              </li>
+              <li class="tn-step" data-step="1">
+                <button class="tn-step-head" type="button"><span class="tn-num">2</span>Describe the task</button>
+                <div class="tn-body"><div class="tn-body-in">
+                  <div class="tn-prompt">
+                    <p class="tn-prompt-from"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/></svg><span class="tn-agent-name">claude</span></p>
+                    <p class="tn-prompt-text"><span class="tn-typed">Post today’s menu photo to our Instagram story and tag the chef.</span><span class="tn-caret" aria-hidden="true"></span></p>
+                    <span class="tn-send" aria-hidden="true"><svg class="ico" viewBox="0 0 24 24"><path d="M12 19V5M6 11l6-6 6 6"/></svg></span>
+                  </div>
+                </div></div>
+              </li>
+              <li class="tn-step" data-step="2">
+                <button class="tn-step-head" type="button"><span class="tn-num">3</span>Let it take care of it</button>
+                <div class="tn-body"><div class="tn-body-in">
+                  <ul class="tn-log">
+                    <li>Opened Instagram</li>
+                    <li>Uploaded menu.jpg</li>
+                    <li>Tagged @chef.ana</li>
+                    <li>Story posted</li>
+                  </ul>
+                  <div class="tn-receipt">
+                    <span class="tn-shots" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+                    <span class="tn-receipt-meta"><span><i class="dot" aria-hidden="true"></i> <b>Receipt</b></span> <span>4 steps</span> <span>0:58</span> <span>4 screenshots</span></span>
+                  </div>
+                </div></div>
+              </li>
+            </ol>
+          </div>
+        </div>
+
+        <div class="tn-rail" aria-hidden="true">
+          <span class="tn-rail-label">Step <b class="tn-rail-n">1</b> of 3</span>
+          <span class="tn-rail-bars"><i><b></b></i><i><b></b></i><i><b></b></i></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section ud" id="real" data-module="undetectable" aria-labelledby="real-title">
+  <div class="wrap ud-grid">
+
+    <div class="ud-copy">
+      <div class="eyebrow" data-reveal><b>04</b><i></i>Super undetectability</div>
+      <h2 class="t-h2" id="real-title" data-reveal style="--d:1">Not an emulator.<br> A real iPhone, <span class="serif">tapped by a robot.</span></h2>
+      <p class="t-lede ud-lede" data-reveal style="--d:2">Apps can tell when they run on a virtual device. A retail phone with a real SIM, touched by a physical stylus, looks exactly like a person. To the app, it is one.</p>
+
+      <div class="card ud-sheet" data-reveal style="--d:3">
+        <div class="ud-sheet-head">
+          <span class="ud-hole" aria-hidden="true"></span>
+          <span>Inspection · Unit 07</span>
+          <span class="ud-sheet-id">Rack SF-2</span>
+        </div>
+        <dl class="ud-rows">
+          <div class="ud-row" data-part="phone" data-reveal="fade" style="--d:4"><dt>Device</dt><dd>Retail iPhone 15 Pro</dd></div>
+          <div class="ud-row" data-part="phone" data-reveal="fade" style="--d:5"><dt>Jailbreak / root</dt><dd>None</dd></div>
+          <div class="ud-row" data-part="phone" data-reveal="fade" style="--d:6"><dt>Helper app</dt><dd>None</dd></div>
+          <div class="ud-row" data-part="phone" data-reveal="fade" style="--d:7"><dt>SIM</dt><dd>Real carrier number</dd></div>
+          <div class="ud-row" data-part="tapper" data-reveal="fade" style="--d:8"><dt>Input</dt><dd>Physical stylus</dd></div>
+          <div class="ud-row" data-part="camera" data-reveal="fade" style="--d:9"><dt>Screen reading</dt><dd>Overhead camera</dd></div>
+          <div class="ud-row" data-part="cable" data-reveal="fade" style="--d:10"><dt>Power</dt><dd>Wired, always charged</dd></div>
+          <div class="ud-row ud-row--pass" data-reveal="fade" style="--d:11"><dt>Device integrity checks</dt><dd>Pass</dd></div>
+        </dl>
+        <p class="ud-sheet-foot">8 / 8 checked<span class="ud-sm-hide"> · signed off by rack ops</span></p>
+        <span class="stamp ud-stamp" aria-hidden="true">Pass</span>
+      </div>
+    </div>
+
+    <!-- camera feed (after the copy in the DOM so the h2 is read first; CSS puts it on the left).
+         The 3D canvas is decorative for AT: the part chips + spec rows carry the same info. -->
+    <div class="ud-panel" data-reveal="scale">
+      <div class="ud-screen">
+        <canvas class="ud-canvas" data-machine="inspect" data-module="inspect" aria-hidden="true"></canvas>
+        <div class="ud-fx" aria-hidden="true"><i class="ud-sweep"></i><i class="ud-scanline"></i></div>
+
+        <div class="ud-hud">
+          <p class="ud-live ud-glass"><span class="dot dot--live"></span>LIVE<span class="ud-sm-hide"> · SF rack</span> · iPhone 15 Pro #07</p>
+          <p class="ud-tc" aria-hidden="true"><span class="ud-sm-hide">CAM 02</span><span class="ud-tc-time">00:14:32:08</span></p>
+
+          <!-- what the app sees: the checks an app / anti-bot SDK runs on the device. Runs once on view,
+               then folds into its verdict (the verdict button reopens it). Only claims made elsewhere on the page. -->
+          <div class="ud-scan ud-glass">
+            <div class="ud-scan-body" id="ud-scan-body">
+              <p class="ud-scan-head"><span>App-side scan</span><span class="ud-scan-n">0/7</span></p>
+              <ul class="ud-scan-list">
+                <li><span>Emulator signature</span><b>Real device</b></li>
+                <li><span>Jailbreak / root</span><b>Not found</b></li>
+                <li><span>Automation app</span><b>Not found</b></li>
+                <li><span>Device integrity</span><b>Pass</b></li>
+                <li><span>SIM / carrier</span><b>Real SIM</b></li>
+                <li><span>Touch source</span><b>Real touch</b></li>
+                <li><span>Screen capture</span><b>Off-device</b></li>
+              </ul>
+            </div>
+            <button type="button" class="ud-verdict" aria-expanded="true" aria-controls="ud-scan-body">
+              <span class="dot"></span><span><b>0 flags</b> · reads as a person</span>
+              <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
+          </div>
+
+          <div class="ud-tip ud-glass" role="status" aria-live="polite">
+            <p class="ud-tip-name"><span class="ud-tip-k">01</span><b>Phone</b></p>
+            <p class="ud-tip-text">A retail iPhone 15 Pro running real apps. No jailbreak, no helper app.</p>
+          </div>
+
+          <p class="ud-hint" aria-hidden="true">
+            <svg class="ico" viewBox="0 0 24 24"><path d="M5 3l14 7-6 2-2 6z"/></svg>
+            <span class="ud-hint-mouse">Hover a part to inspect</span><span class="ud-hint-touch">Tap a part to inspect</span>
+          </p>
+
+          <ul class="ud-legend" aria-label="Machine parts">
+            <li><button type="button" class="chip ud-chip ud-glass" data-part="phone"><i></i>Phone</button></li>
+            <li><button type="button" class="chip ud-chip ud-glass" data-part="tapper"><i></i>Tapper</button></li>
+            <li><button type="button" class="chip ud-chip ud-glass" data-part="camera"><i></i>Camera</button></li>
+            <li><button type="button" class="chip ud-chip ud-glass" data-part="cable"><i></i>Cable</button></li>
+          </ul>
+        </div>
+      </div>
+      <span class="tape ud-tape" aria-hidden="true">do not unplug - Ana</span>
+    </div>
+
+  </div>
+</section>
+
+<section class="section wy" id="why" data-module="why" aria-labelledby="why-title">
+  <div class="wrap">
+    <header class="wy-head">
+      <div class="eyebrow" data-reveal><b>05</b><i></i>Why STROWGER</div>
+      <h2 class="t-h2 wy-title" id="why-title" data-reveal style="--d:1">Every other route hits <span class="serif">a wall somewhere.</span></h2>
+      <p class="t-lede wy-lede" data-reveal style="--d:2">Agents stall the moment a task needs a native app, a real text message or a phone the app trusts. Here is where each route gives out.</p>
+    </header>
+
+    <div class="wy-board" data-reveal="fade" style="--d:2">
+      <div class="wy-scroll"><div class="wy-scroll-in">   <!-- phones: the table scrolls sideways -->
+        <div class="wy-anno" aria-hidden="true">
+          <span class="hand wy-anno-t">the only column with no ×</span>
+          <svg class="wy-arrow" viewBox="0 0 50 120"><path pathLength="1" d="M4 7C28 4 36 30 32 62c-3 26 0 42 10 52"/><path pathLength="1" d="M30 112.5l12 2 .5-12"/></svg>
+        </div>
+
+        <div class="card wy-card">
+          <div class="wy-grid">
+            <div class="wy-tab" aria-hidden="true"></div>
+            <table class="wy-table">
+              <caption class="sr-only">How STROWGER compares with browser agents and emulators</caption>
+              <colgroup><col class="wy-col-label"><col><col><col></colgroup>
+              <thead>
+                <tr>
+                  <th scope="col" class="wy-corner">What the task needs</th>
+                  <th scope="col"><span class="wy-ch"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4.5" width="18" height="15" rx="2.5"/><path d="M3 9h18M6.5 6.75h.01M9.5 6.75h.01"/></svg><span class="wy-cn">Browser agents</span><span class="wy-cs" aria-hidden="true">Web only</span></span></th>
+                  <th scope="col"><span class="wy-ch"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="4" width="19" height="13" rx="2"/><path d="M9 21h6M12 17v4"/><rect x="10" y="7" width="4" height="7" rx=".8"/></svg><span class="wy-cn">Emulators</span><span class="wy-cs" aria-hidden="true">Virtual device</span></span></th>
+                  <th scope="col" class="wy-pu"><span class="wy-ch"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="7.5" width="14" height="14" rx="2.5"/><path d="M12 2v7.5"/><circle cx="12" cy="11.5" r="1.7"/></svg><span class="wy-cn wy-cn--pu">STROWGER<svg class="wy-ring" viewBox="0 0 160 60" aria-hidden="true"><path pathLength="1" d="M124 8.5C98 2.5 44 3 17 16.5 0 25.5 7 45 42 52.5c40 8 99 2 112-14.5 9-11.5-7-27-43-31.5-17-2-35-1-50 2.5"/></svg></span><span class="wy-cs" aria-hidden="true">Cloud + real</span></span></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <th scope="row" tabindex="0"><span class="wy-rl"><span class="wy-idx" aria-hidden="true">01</span><span class="wy-lt">Use native mobile apps<span class="wy-note">Browser agents can’t leave the web.</span></span></span></th>
+                  <td><svg class="wy-i wy-i--no" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 8l8 8M16 8l-8 8"/></svg><span class="sr-only">No</span></td>
+                  <td><svg class="wy-i wy-i--yes" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg><span class="sr-only">Yes</span></td>
+                  <td class="wy-pu"><span class="wy-ok" style="--i:0" aria-hidden="true"><svg viewBox="0 0 24 24"><path pathLength="1" d="M6.5 12.5l3.8 3.8L17.5 8.5"/></svg></span><span class="sr-only">Yes</span></td>
+                </tr>
+                <tr>
+                  <th scope="row" tabindex="0"><span class="wy-rl"><span class="wy-idx" aria-hidden="true">02</span><span class="wy-lt">Receive real SMS and 2FA<span class="wy-note">Texts need a SIM. Only phones have one.</span></span></span></th>
+                  <td><svg class="wy-i wy-i--no" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 8l8 8M16 8l-8 8"/></svg><span class="sr-only">No</span></td>
+                  <td><svg class="wy-i wy-i--no" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 8l8 8M16 8l-8 8"/></svg><span class="sr-only">No</span></td>
+                  <td class="wy-pu"><span class="wy-ok" style="--i:1" aria-hidden="true"><svg viewBox="0 0 24 24"><path pathLength="1" d="M6.5 12.5l3.8 3.8L17.5 8.5"/></svg></span><span class="sr-only">Yes</span></td>
+                </tr>
+                <tr>
+                  <th scope="row" tabindex="0"><span class="wy-rl"><span class="wy-idx" aria-hidden="true">03</span><span class="wy-lt">Pass device integrity checks<span class="wy-note">Emulators fail Play Integrity and App Attest.</span></span></span></th>
+                  <td><svg class="wy-i wy-i--no" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 8l8 8M16 8l-8 8"/></svg><span class="sr-only">No</span></td>
+                  <td><svg class="wy-i wy-i--no" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 8l8 8M16 8l-8 8"/></svg><span class="sr-only">No</span></td>
+                  <td class="wy-pu"><span class="wy-ok" style="--i:2" aria-hidden="true"><svg viewBox="0 0 24 24"><path pathLength="1" d="M6.5 12.5l3.8 3.8L17.5 8.5"/></svg></span><span class="sr-only">Yes</span></td>
+                </tr>
+                <tr>
+                  <th scope="row" tabindex="0"><span class="wy-rl"><span class="wy-idx" aria-hidden="true">04</span><span class="wy-lt">No hardware on your desk<span class="wy-note">Real phones, racked in our cloud. Nothing to plug in.</span></span></span></th>
+                  <td><svg class="wy-i wy-i--yes" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg><span class="sr-only">Yes</span></td>
+                  <td><svg class="wy-i wy-i--yes" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg><span class="sr-only">Yes</span></td>
+                  <td class="wy-pu"><span class="wy-ok" style="--i:3" aria-hidden="true"><svg viewBox="0 0 24 24"><path pathLength="1" d="M6.5 12.5l3.8 3.8L17.5 8.5"/></svg></span><span class="sr-only">Yes</span></td>
+                </tr>
+                <tr>
+                  <th scope="row" tabindex="0"><span class="wy-rl"><span class="wy-idx" aria-hidden="true">05</span><span class="wy-lt">Hundreds of devices in parallel<span class="wy-note">Emulators eat RAM. A laptop runs a handful.</span></span></span></th>
+                  <td><svg class="wy-i wy-i--yes" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg><span class="sr-only">Yes</span></td>
+                  <td><svg class="wy-i wy-i--partly" viewBox="0 0 24 24" aria-hidden="true"><path d="M7.5 12h9"/></svg><span class="sr-only">Partly</span></td>
+                  <td class="wy-pu"><span class="wy-ok" style="--i:4" aria-hidden="true"><svg viewBox="0 0 24 24"><path pathLength="1" d="M6.5 12.5l3.8 3.8L17.5 8.5"/></svg></span><span class="sr-only">Yes</span></td>
+                </tr>
+                <tr>
+                  <th scope="row" tabindex="0"><span class="wy-rl"><span class="wy-idx" aria-hidden="true">06</span><span class="wy-lt">Works from any MCP client<span class="wy-note">Emulator MCP servers exist, but setup is DIY.</span></span></span></th>
+                  <td><svg class="wy-i wy-i--yes" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg><span class="sr-only">Yes</span></td>
+                  <td><svg class="wy-i wy-i--partly" viewBox="0 0 24 24" aria-hidden="true"><path d="M7.5 12h9"/></svg><span class="sr-only">Partly</span></td>
+                  <td class="wy-pu"><span class="wy-ok" style="--i:5" aria-hidden="true"><svg viewBox="0 0 24 24"><path pathLength="1" d="M6.5 12.5l3.8 3.8L17.5 8.5"/></svg></span><span class="sr-only">Yes</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div></div>
+
+      <div class="wy-foot">
+        <ul class="wy-legend" aria-label="Legend">
+          <li><svg class="wy-i wy-i--yes" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Yes</li>
+          <li><svg class="wy-i wy-i--partly" viewBox="0 0 24 24" aria-hidden="true"><path d="M7.5 12h9"/></svg>Partly, with workarounds</li>
+          <li><svg class="wy-i wy-i--no" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 8l8 8M16 8l-8 8"/></svg>No</li>
+        </ul>
+        <p class="wy-hint"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3.5l13 6.2-5.6 1.9-2 5.7z"/></svg>Hover or focus a row to see why</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section bd" id="build" data-module="build" aria-labelledby="build-title">
+  <div class="bd-panel on-dark">
+    <div class="bd-wrap">
+
+      <header class="bd-head">
+        <div class="bd-head-l" data-reveal>
+          <div class="eyebrow"><b>06</b><i></i>Build</div>
+          <h2 class="t-h2" id="build-title">A phone in a<br> <span class="serif">few lines</span> of code.</h2>
+        </div>
+        <div class="bd-head-r" data-reveal style="--d:1">
+          <p class="t-lede">Drop the MCP server into Claude, Cursor, Codex or Windsurf. Or use the API or the CLI. No SDK required, no device setup.</p>
+          <a class="bd-docs" href="/docs.html#">Read the docs <svg class="ico arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        </div>
+      </header>
+
+      <div class="bd-grid">
+
+        <!-- 1 · CODE -->
+        <article class="bd-card bd-code" aria-labelledby="bd-code-l" data-reveal style="--d:0">
+          <span class="tape bd-tape" aria-hidden="true">paste &amp; go</span>
+          <div class="bd-stage">
+            <div class="bd-win">
+              <div class="bd-bar">
+                <span class="bd-lights" aria-hidden="true"><i></i><i></i><i></i></span>
+                <div class="bd-tabs" role="tablist" aria-label="Snippet">
+                  <button type="button" role="tab" id="bd-tab-mcp" data-k="mcp" aria-selected="true" aria-controls="bd-src">MCP</button>
+                  <button type="button" role="tab" id="bd-tab-api" data-k="api" aria-selected="false" aria-controls="bd-src" tabindex="-1">API</button>
+                  <button type="button" role="tab" id="bd-tab-cli" data-k="cli" aria-selected="false" aria-controls="bd-src" tabindex="-1">CLI</button>
+                </div>
+                <button type="button" class="bd-copy" data-copy>
+                  <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2.5"/><path d="M15 9V6.5A2.5 2.5 0 0 0 12.5 4h-6A2.5 2.5 0 0 0 4 6.5v6A2.5 2.5 0 0 0 6.5 15H9"/></svg>
+                  <span data-label>Copy</span>
+                </button>
+              </div>
+              <div class="bd-src" id="bd-src" role="tabpanel" aria-labelledby="bd-tab-mcp" tabindex="0">
+                <pre class="sr-only" data-sr></pre>
+                <div class="bd-lines" data-lines aria-hidden="true"></div>
+              </div>
+              <div class="bd-tools">
+                <p class="bd-tools-k"><i aria-hidden="true"></i>12 tools</p>
+                <ul aria-label="Tools the server exposes">
+                  <li style="--i:0">phone.acquire</li><li style="--i:1">screen.read</li><li style="--i:2">tap</li><li style="--i:3">type</li><li style="--i:4">swipe</li><li style="--i:5">app.open</li><li style="--i:6">sms.read</li><li style="--i:7" class="bd-more-tools">+5 more</li>
+                </ul>
+              </div>
+              <p class="bd-prompt"><span class="bd-chev" aria-hidden="true">&gt;</span><span>“Get a real iPhone, open Instagram and post today’s menu to our story.”</span></p>
+              <div class="bd-status" aria-hidden="true">
+                <span class="bd-conn" data-conn><i></i><span data-conn-label>connecting…</span></span>
+                <span data-lang>JSON</span><span>UTF-8</span><span data-pos>Ln 1, Col 1</span>
+              </div>
+            </div>
+          </div>
+          <footer class="bd-foot">
+            <h3 class="bd-label" id="bd-code-l">Code</h3>
+            <a class="bd-more" href="/docs.html#quickstart">Docs<span class="sr-only"> for the quickstart</span> <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+          </footer>
+        </article>
+
+        <!-- 2 · RUN -->
+        <article class="bd-card bd-run" aria-labelledby="bd-run-l" data-reveal style="--d:1">
+          <div class="bd-stage">
+            <div class="bd-term" aria-hidden="true">
+              <div class="bd-term-head">
+                <span class="bd-path">projects/main</span>
+                <span class="bd-meter"><i data-meter></i></span>
+                <span class="bd-pct" data-ctx>16.15%</span>
+              </div>
+              <p class="bd-ask"><span>❯</span>Reply to every comment on today’s Reel</p>
+              <ol class="bd-log" data-log></ol>
+            </div>
+            <p class="sr-only">An agent run: it acquires a real iPhone 15 Pro, reads 38 comments on an Instagram Reel, replies to every one, and finishes in 2.8 seconds.</p>
+          </div>
+          <footer class="bd-foot">
+            <h3 class="bd-label" id="bd-run-l">Run</h3>
+            <a class="bd-more" href="/docs.html#agent/runs">Docs<span class="sr-only"> for runs</span> <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+          </footer>
+        </article>
+
+        <!-- 3 · CHAT -->
+        <article class="bd-card bd-chat" aria-labelledby="bd-chat-l" data-reveal style="--d:2">
+          <div class="bd-stage">
+            <div class="bd-msgs" aria-hidden="true"><div class="bd-list" data-list></div></div>
+            <div class="bd-input" aria-hidden="true">
+              <span class="bd-draft" data-draft></span><span class="bd-ph">Message your agent</span>
+              <i class="bd-send"><svg class="ico" viewBox="0 0 24 24"><path d="M12 19V5M6 11l6-6 6 6"/></svg></i>
+            </div>
+            <p class="sr-only">Example chat. You: Get a real iPhone and tell me when the driver is here. Agent: Watching the ride app on iPhone #07. Agent: Your driver is here: grey Toyota Camry, plate 8KXL 204. I texted the guest. You: Perfect. Book the same ride for Friday 7pm.</p>
+          </div>
+          <footer class="bd-foot">
+            <h3 class="bd-label" id="bd-chat-l">Chat</h3>
+            <a class="bd-more" href="/docs.html#copilot/chat">Docs<span class="sr-only"> for chat agents</span> <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+          </footer>
+        </article>
+
+        <!-- 4 · CLIENTS -->
+        <article class="bd-card bd-clients" aria-labelledby="bd-clients-l" data-reveal style="--d:0">
+          <div class="bd-stage">
+            <p class="bd-ctitle">Works from any MCP client</p>
+            <ul class="bd-clist">
+              <li><span class="bd-cico"><span class="app app--claude" aria-hidden="true"></span><i class="bd-sdot"></i></span><span class="bd-cname">Claude</span><span class="bd-ctype">MCP</span><span class="bd-lat" data-ms="38">38ms</span></li>
+              <li><span class="bd-cico"><span class="app app--cursor" aria-hidden="true"></span><i class="bd-sdot"></i></span><span class="bd-cname">Cursor</span><span class="bd-ctype">MCP</span><span class="bd-lat" data-ms="41">41ms</span></li>
+              <li><span class="bd-cico"><span class="app app--codex" aria-hidden="true"></span><i class="bd-sdot"></i></span><span class="bd-cname">Codex</span><span class="bd-ctype">MCP</span><span class="bd-lat" data-ms="44">44ms</span></li>
+              <li><span class="bd-cico"><span class="app app--windsurf" aria-hidden="true"></span><i class="bd-sdot"></i></span><span class="bd-cname">Windsurf</span><span class="bd-ctype">MCP</span><span class="bd-lat" data-ms="47">47ms</span></li>
+              <li><span class="bd-cico"><span class="bd-api" aria-hidden="true"><svg class="ico" viewBox="0 0 24 24"><path d="m5 8 4 4-4 4M12 17h7"/></svg></span><i class="bd-sdot"></i></span><span class="bd-cname">STROWGER CLI</span><span class="bd-ctype">npm</span><span class="bd-lat" data-ms="29">29ms</span></li>
+              <li><span class="bd-cico"><span class="bd-api" aria-hidden="true"><svg class="ico" viewBox="0 0 24 24"><path d="M8 3H7a2 2 0 0 0-2 2v5a2 2 0 0 1-2 2 2 2 0 0 1 2 2v5a2 2 0 0 0 2 2h1M16 21h1a2 2 0 0 0 2-2v-5a2 2 0 0 1 2-2 2 2 0 0 1-2-2V5a2 2 0 0 0-2-2h-1"/></svg></span><i class="bd-sdot"></i></span><span class="bd-cname">API</span><span class="bd-ctype">HTTPS</span><span class="bd-lat" data-ms="33">33ms</span></li>
+            </ul>
+          </div>
+          <footer class="bd-foot">
+            <h3 class="bd-label" id="bd-clients-l">Clients</h3>
+            <a class="bd-more" href="/docs.html#getting-started/mcp-config">Docs<span class="sr-only"> for MCP clients</span> <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+          </footer>
+        </article>
+
+        <!-- 5 · FLEET -->
+        <article class="bd-card bd-fleet" aria-labelledby="bd-fleet-l" data-reveal style="--d:1">
+          <canvas class="bd-globe" aria-hidden="true"></canvas>
+          <div class="bd-stage">
+            <div class="bd-fmeta">
+              <p class="bd-count"><b data-count>312</b> phones online</p>
+              <ul class="bd-legend">
+                <li><i class="is-cloud"></i><span class="bd-lk">Cloud</span><b data-cloud>288</b><span class="bd-ld">Android, boots in ~4 s</span></li>
+                <li><i class="is-real"></i><span class="bd-lk">Real</span><b data-real>24</b><span class="bd-ld">iPhone, Pixel, Galaxy in SF</span></li>
+              </ul>
+            </div>
+          </div>
+          <footer class="bd-foot">
+            <h3 class="bd-label" id="bd-fleet-l">Fleet</h3>
+            <a class="bd-more" href="/docs.html#devices/tiers">Docs<span class="sr-only"> for devices</span> <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+          </footer>
+        </article>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section uc" id="use-cases" data-module="usecases" aria-labelledby="use-cases-title">
+  <div class="wrap">
+    <header class="uc-head">
+      <div class="eyebrow" data-reveal><b>07</b><i></i>Built for</div>
+      <h2 class="t-h2" id="use-cases-title" data-reveal style="--d:1">If it happens on a phone,<br><span class="serif">an agent can do it now.</span></h2>
+      <p class="t-lede uc-lede" data-reveal style="--d:2">Teams use STROWGER wherever the browser runs out.</p>
+    </header>
+
+    <div class="uc-grid">
+
+      <!-- 1 · Social and marketing -->
+      <article class="card card--dark on-dark uc-card uc-card--social" data-reveal aria-labelledby="uc-social-t">
+        <div class="uc-card-top">
+          <span class="icon-tile uc-tile"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></svg></span>
+          <span class="uc-tag"><i class="uc-k uc-k--real"></i>Real phone</span>
+        </div>
+        <h3 class="t-h3" id="uc-social-t">Social and marketing</h3>
+        <p class="t-body">Post, reply and grow on TikTok, Instagram and Reddit, where browser bots get caught.</p>
+        <div class="uc-vis uc-social" aria-hidden="true">
+          <div class="uc-stage">
+            <div class="uc-reel">
+              <svg class="uc-reel-art" viewBox="0 0 90 160" preserveAspectRatio="xMidYMid slice">
+                <defs><linearGradient id="uc-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1A1C24"/><stop offset=".5" stop-color="#7E3418"/><stop offset=".78" stop-color="#E8622C"/><stop offset="1" stop-color="#FF9A5C"/></linearGradient></defs>
+                <rect width="90" height="160" fill="url(#uc-sky)"/>
+                <circle cx="46" cy="99" r="16" fill="#FFD9B0"/>
+                <path d="M0 106q22-12 44-2t46-4v60H0z" fill="#2B1A15"/>
+                <path d="M0 124q30-12 58-2t32-4v42H0z" fill="#131416"/>
+              </svg>
+              <span class="uc-reel-label"><svg viewBox="0 0 24 24"><path d="M7.0301.084c-1.2768.0602-2.1487.264-2.911.5634-.7888.3075-1.4575.72-2.1228 1.3877-.6652.6677-1.075 1.3368-1.3802 2.127-.2954.7638-.4956 1.6365-.552 2.914-.0564 1.2775-.0689 1.6882-.0626 4.947.0062 3.2586.0206 3.6671.0825 4.9473.061 1.2765.264 2.1482.5635 2.9107.308.7889.72 1.4573 1.388 2.1228.6679.6655 1.3365 1.0743 2.1285 1.38.7632.295 1.6361.4961 2.9134.552 1.2773.056 1.6884.069 4.9462.0627 3.2578-.0062 3.668-.0207 4.9478-.0814 1.28-.0607 2.147-.2652 2.9098-.5633.7889-.3086 1.4578-.72 2.1228-1.3881.665-.6682 1.0745-1.3378 1.3795-2.1284.2957-.7632.4966-1.636.552-2.9124.056-1.2809.0692-1.6898.063-4.948-.0063-3.2583-.021-3.6668-.0817-4.9465-.0607-1.2797-.264-2.1487-.5633-2.9117-.3084-.7889-.72-1.4568-1.3876-2.1228C21.2982 1.33 20.628.9208 19.8378.6165 19.074.321 18.2017.1197 16.9244.0645 15.6471.0093 15.236-.005 11.977.0014 8.718.0076 8.31.0215 7.0301.0839m.1402 21.6932c-1.17-.0509-1.8053-.2453-2.2287-.408-.5606-.216-.96-.4771-1.3819-.895-.422-.4178-.6811-.8186-.9-1.378-.1644-.4234-.3624-1.058-.4171-2.228-.0595-1.2645-.072-1.6442-.079-4.848-.007-3.2037.0053-3.583.0607-4.848.05-1.169.2456-1.805.408-2.2282.216-.5613.4762-.96.895-1.3816.4188-.4217.8184-.6814 1.3783-.9003.423-.1651 1.0575-.3614 2.227-.4171 1.2655-.06 1.6447-.072 4.848-.079 3.2033-.007 3.5835.005 4.8495.0608 1.169.0508 1.8053.2445 2.228.408.5608.216.96.4754 1.3816.895.4217.4194.6816.8176.9005 1.3787.1653.4217.3617 1.056.4169 2.2263.0602 1.2655.0739 1.645.0796 4.848.0058 3.203-.0055 3.5834-.061 4.848-.051 1.17-.245 1.8055-.408 2.2294-.216.5604-.4763.96-.8954 1.3814-.419.4215-.8181.6811-1.3783.9-.4224.1649-1.0577.3617-2.2262.4174-1.2656.0595-1.6448.072-4.8493.079-3.2045.007-3.5825-.006-4.848-.0608M16.953 5.5864A1.44 1.44 0 1 0 18.39 4.144a1.44 1.44 0 0 0-1.437 1.4424M5.8385 12.012c.0067 3.4032 2.7706 6.1557 6.173 6.1493 3.4026-.0065 6.157-2.7701 6.1506-6.1733-.0065-3.4032-2.771-6.1565-6.174-6.1498-3.403.0067-6.156 2.771-6.1496 6.1738M8 12.0077a4 4 0 1 1 4.008 3.9921A3.9996 3.9996 0 0 1 8 12.0077"/></svg>Reels</span>
+              <span class="uc-reel-side">
+                <svg viewBox="0 0 24 24" class="is-fill"><path d="M12 20s-7.5-4.6-7.5-10.2A4.1 4.1 0 0 1 12 7.4a4.1 4.1 0 0 1 7.5 2.4C19.5 15.4 12 20 12 20z"/></svg>
+                <svg viewBox="0 0 24 24"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22z"/></svg>
+                <svg viewBox="0 0 24 24"><path d="M21 3L3 10.4l7.2 3.4L13.6 21z"/><path d="M21 3l-10.8 10.8"/></svg>
+              </span>
+              <span class="uc-reel-who"><b>loomwear</b><span><svg viewBox="0 0 24 24"><path d="M8 5.5v13l11-6.5z"/></svg>48.2K</span></span>
+              <span class="uc-reel-bar"><i></i></span>
+            </div>
+            <div class="uc-thread">
+              <div class="uc-thread-head"><span class="uc-thread-title"><span class="uc-srcs"><span class="app app--instagram" role="img" aria-label="Instagram"></span><span class="app app--tiktok" role="img" aria-label="TikTok"></span><span class="app app--reddit" role="img" aria-label="Reddit"></span></span><span>Comments<span class="uc-today"> · today</span></span></span><span class="uc-count"><b>3</b>/3 replied</span></div>
+              <ul class="uc-cmts">
+                <li class="uc-cmt">
+                  <span class="uc-av" style="--av:#E8A598">M</span>
+                  <div class="uc-cmt-main">
+                    <p class="uc-cmt-text"><b>mira.k</b>where did you get that jacket??</p>
+                    <p class="uc-reply"><svg viewBox="0 0 24 24"><path d="M6 4v6a4 4 0 0 0 4 4h9"/><path d="M15 10l4 4-4 4"/></svg><b>loomwear</b><span class="uc-reply-text">Spring drop. It's linked in our bio</span></p>
+                  </div>
+                  <span class="uc-done">Replied<svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>
+                </li>
+                <li class="uc-cmt">
+                  <span class="uc-av" style="--av:#8FC3E6">D</span>
+                  <div class="uc-cmt-main">
+                    <p class="uc-cmt-text"><b>dev.on.bikes</b>is this in XL?</p>
+                    <p class="uc-reply"><svg viewBox="0 0 24 24"><path d="M6 4v6a4 4 0 0 0 4 4h9"/><path d="M15 10l4 4-4 4"/></svg><b>loomwear</b><span class="uc-reply-text">Yes, XL restocks Friday</span></p>
+                  </div>
+                  <span class="uc-done">Replied<svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>
+                </li>
+                <li class="uc-cmt">
+                  <span class="uc-av" style="--av:#E3C38A">T</span>
+                  <div class="uc-cmt-main">
+                    <p class="uc-cmt-text"><b>t.okafor</b>the colour on this is unreal</p>
+                    <p class="uc-reply"><svg viewBox="0 0 24 24"><path d="M6 4v6a4 4 0 0 0 4 4h9"/><path d="M15 10l4 4-4 4"/></svg><b>loomwear</b><span class="uc-reply-text">Thank you! It's called Ember</span></p>
+                  </div>
+                  <span class="uc-done">Replied<svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <p class="uc-prompt"><svg class="uc-spark" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3q1 8 9 9-8 1-9 9-1-8-9-9 8-1 9-9z"/></svg><span><span class="sr-only">Example prompt: </span>&ldquo;Reply to every comment on today&rsquo;s Reel&rdquo;</span><svg class="ico uc-enter" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 5v6a3 3 0 0 1-3 3H5"/><path d="M9 10l-4 4 4 4"/></svg></p>
+      </article>
+
+      <!-- 2 · Proactive iMessage -->
+      <article class="card uc-card uc-card--imsg" data-reveal style="--d:1" aria-labelledby="uc-imsg-t">
+        <div class="uc-card-top">
+          <span class="icon-tile uc-tile"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22z"/></svg></span>
+          <span class="uc-tag"><i class="uc-k uc-k--real"></i>Real iPhone</span>
+        </div>
+        <h3 class="t-h3" id="uc-imsg-t">Proactive iMessage agents</h3>
+        <p class="t-body">Agents that text first, with the full context of a real phone behind them.</p>
+        <div class="uc-vis uc-imsg" aria-hidden="true">
+          <div class="uc-stage">
+            <div class="uc-im-head">
+              <span class="uc-im-who"><span class="uc-im-av">S<span class="app app--imessage" role="img" aria-label="iMessage"></span></span>Sam</span>
+              <span class="uc-trigger"><svg viewBox="0 0 24 24"><path d="M13 3L5 13.5h6L10 21l8-10.5h-6z"/></svg>order.shipped</span>
+            </div>
+            <div class="uc-im-past">
+              <p class="uc-im-meta">Mon 6:12 PM</p>
+              <p class="uc-bub uc-bub--me uc-bub--past">Order confirmed. I&rsquo;ll text you when it ships.</p>
+            </div>
+            <p class="uc-im-meta">iMessage · Today 9:41 AM</p>
+            <p class="uc-bub uc-bub--me">Hi Sam, your order just shipped. Arrives Thursday.</p>
+            <p class="uc-im-status"><span class="uc-im-del">Delivered</span><span class="uc-im-read"><b>Read</b> 9:42</span></p>
+            <div class="uc-im-them">
+              <p class="uc-bub uc-bub--them uc-im-dots"><i></i><i></i><i></i></p>
+              <p class="uc-bub uc-bub--them uc-im-reply">amazing thank you</p>
+            </div>
+          </div>
+        </div>
+        <p class="uc-prompt"><svg class="uc-spark" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3q1 8 9 9-8 1-9 9-1-8-9-9 8-1 9-9z"/></svg><span><span class="sr-only">Example prompt: </span>&ldquo;Text Sam when his order ships&rdquo;</span><svg class="ico uc-enter" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 5v6a3 3 0 0 1-3 3H5"/><path d="M9 10l-4 4 4 4"/></svg></p>
+      </article>
+
+      <!-- 3 · SMS and 2FA -->
+      <article class="card uc-card uc-card--sms" data-reveal aria-labelledby="uc-sms-t">
+        <div class="uc-card-top">
+          <span class="icon-tile uc-tile"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v5.5c0 4.4-3 7.9-7 9.5-4-1.6-7-5.1-7-9.5V6z"/><path d="M9 12l2 2 4-4"/></svg></span>
+          <span class="uc-tag"><i class="uc-k uc-k--real"></i>Real SIM</span>
+        </div>
+        <h3 class="t-h3" id="uc-sms-t">SMS and 2FA</h3>
+        <p class="t-body">A real number receives verification codes, so flows never stall at login.</p>
+        <div class="uc-vis uc-vis--dots uc-sms" aria-hidden="true">
+          <div class="uc-stage">
+            <div class="uc-notif">
+              <span class="app app--imessage uc-notif-app" role="img" aria-label="Messages"></span>
+              <div class="uc-notif-body">
+                <p class="uc-notif-top"><b>Messages</b><span>now</span></p>
+                <p class="uc-notif-msg">Your code is <b>482193</b>. Don&rsquo;t&nbsp;share&nbsp;it.</p>
+              </div>
+            </div>
+            <div class="uc-otp">
+              <p class="uc-otp-label">Code sent to +1 415 ••• 0192</p>
+              <div class="uc-otp-boxes">
+                <span class="uc-otp-box is-focus"><span class="uc-otp-reel"></span></span>
+                <span class="uc-otp-box"><span class="uc-otp-reel"></span></span>
+                <span class="uc-otp-box"><span class="uc-otp-reel"></span></span>
+                <span class="uc-otp-box"><span class="uc-otp-reel"></span></span>
+                <span class="uc-otp-box"><span class="uc-otp-reel"></span></span>
+                <span class="uc-otp-box"><span class="uc-otp-reel"></span></span>
+              </div>
+              <p class="uc-verified"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Verified</p>
+            </div>
+          </div>
+        </div>
+        <p class="uc-prompt"><svg class="uc-spark" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3q1 8 9 9-8 1-9 9-1-8-9-9 8-1 9-9z"/></svg><span><span class="sr-only">Example prompt: </span>&ldquo;Log in and read the code from SMS&rdquo;</span><svg class="ico uc-enter" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 5v6a3 3 0 0 1-3 3H5"/><path d="M9 10l-4 4 4 4"/></svg></p>
+      </article>
+
+      <!-- 4 · Mobile-only apps -->
+      <article class="card uc-card uc-card--apps" data-reveal style="--d:1" aria-labelledby="uc-apps-t">
+        <div class="uc-card-top">
+          <span class="icon-tile uc-tile"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8h14l-1.2 11.2a2 2 0 0 1-2 1.8H8.2a2 2 0 0 1-2-1.8z"/><path d="M9 8V6.5a3 3 0 0 1 6 0V8"/></svg></span>
+          <span class="uc-tag"><i class="uc-k uc-k--cloud"></i><i class="uc-k uc-k--real"></i>Cloud or real</span>
+        </div>
+        <h3 class="t-h3" id="uc-apps-t">Mobile-only apps</h3>
+        <p class="t-body">Order on Swiggy, Zomato or Uber, apps with no web version an agent could reach.</p>
+        <div class="uc-vis uc-vis--dots uc-food" aria-hidden="true">
+          <div class="uc-stage">
+            <div class="uc-order">
+              <div class="uc-order-head">
+                <span class="uc-order-logo">TC<span class="app app--zomato" role="img" aria-label="Zomato"></span></span>
+                <p class="uc-order-name"><b>Tandoor Corner</b><span>Your usual · 2.1 km</span></p>
+                <span class="uc-order-eta">ETA <b>28</b> min</span>
+              </div>
+              <ul class="uc-order-items">
+                <li><i class="uc-veg"></i><span>Paneer tikka roll</span><em>×2</em><span>₹298</span></li>
+                <li><i class="uc-veg"></i><span>Masala chai</span><em>×1</em><span>₹60</span></li>
+              </ul>
+              <div class="uc-order-act">
+                <span class="uc-order-btn">Reorder · ₹358</span>
+                <ol class="uc-track"><li>Placed</li><li>Preparing</li><li>On the way</li></ol>
+                <span class="uc-tap"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <p class="uc-prompt"><svg class="uc-spark" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3q1 8 9 9-8 1-9 9-1-8-9-9 8-1 9-9z"/></svg><span><span class="sr-only">Example prompt: </span>&ldquo;Reorder my usual from Zomato&rdquo;</span><svg class="ico uc-enter" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 5v6a3 3 0 0 1-3 3H5"/><path d="M9 10l-4 4 4 4"/></svg></p>
+      </article>
+
+      <!-- 5 · Testing and QA -->
+      <article class="card uc-card uc-card--qa" data-reveal style="--d:2" aria-labelledby="uc-qa-t">
+        <div class="uc-card-top">
+          <span class="icon-tile uc-tile"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3h6"/><path d="M10 3v6.5l-5.4 9.1A1.6 1.6 0 0 0 6 21h12a1.6 1.6 0 0 0 1.4-2.4L14 9.5V3"/><path d="M7.5 15h9"/></svg></span>
+          <span class="uc-tag"><i class="uc-k uc-k--cloud"></i><i class="uc-k uc-k--real"></i>Cloud + real</span>
+        </div>
+        <h3 class="t-h3" id="uc-qa-t">Testing and QA</h3>
+        <p class="t-body">Run suites across hundreds of Android and dozens of iOS devices in parallel.</p>
+        <div class="uc-vis uc-vis--dots uc-qa" aria-hidden="true">
+          <div class="uc-stage">
+            <div class="uc-qa-grid"></div>
+            <div class="uc-qa-foot">
+              <p class="uc-qa-meta"><b class="uc-qa-n">40</b>/40 passed · <span class="uc-qa-what">checkout</span></p>
+              <span class="stamp uc-stamp">Pass</span>
+            </div>
+          </div>
+        </div>
+        <p class="uc-prompt"><svg class="uc-spark" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3q1 8 9 9-8 1-9 9-1-8-9-9 8-1 9-9z"/></svg><span><span class="sr-only">Example prompt: </span>&ldquo;Run checkout on 40 devices&rdquo;</span><svg class="ico uc-enter" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 5v6a3 3 0 0 1-3 3H5"/><path d="M9 10l-4 4 4 4"/></svg></p>
+      </article>
+
+      <!-- 6 · Agent sandboxes (wide strip) -->
+      <article class="card uc-card uc-card--sandbox" data-reveal aria-labelledby="uc-sb-t">
+        <span class="uc-sb-tape" aria-hidden="true"><span class="tape">eval-base, do not touch</span></span>
+        <div class="uc-sb-text">
+          <div class="uc-card-top">
+            <span class="icon-tile uc-tile"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 8l-9-5-9 5 9 5z"/><path d="M3 8v8l9 5 9-5V8"/><path d="M12 13v8"/></svg></span>
+            <span class="uc-tag"><i class="uc-k uc-k--cloud"></i>Cloud phone</span>
+          </div>
+          <h3 class="t-h3" id="uc-sb-t">Agent sandboxes</h3>
+          <p class="t-body">Give agents a safe mobile environment to learn and evaluate in before production.</p>
+          <p class="uc-prompt"><svg class="uc-spark" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3q1 8 9 9-8 1-9 9-1-8-9-9 8-1 9-9z"/></svg><span><span class="sr-only">Example prompt: </span>&ldquo;Spin up 10 clean Pixels for evals&rdquo;</span><svg class="ico uc-enter" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 5v6a3 3 0 0 1-3 3H5"/><path d="M9 10l-4 4 4 4"/></svg></p>
+        </div>
+        <div class="uc-vis uc-vis--dots uc-sb" aria-hidden="true">
+          <div class="uc-stage">
+            <div class="uc-sb-row"></div>
+            <p class="uc-sb-status"><span class="dot uc-sb-dot"></span><span><b class="uc-sb-n">10</b> clean Pixels · <span class="uc-sb-snap">snapshot eval-base · </span><span class="uc-sb-state">ready</span></span></p>
+          </div>
+        </div>
+      </article>
+
+    </div>
+  </div>
+</section>
+
+<section class="section pf" id="proof" data-module="proof" aria-labelledby="proof-title">
+  <svg class="pf-sprite" width="0" height="0" aria-hidden="true" focusable="false">
+    <symbol id="pf-i-play" viewBox="0 0 24 24"><path d="M8 5.6v12.8a1 1 0 0 0 1.52.85l10.3-6.4a1 1 0 0 0 0-1.7L9.52 4.75A1 1 0 0 0 8 5.6z"/></symbol>
+    <symbol id="pf-i-pause" viewBox="0 0 24 24"><rect x="6.5" y="5" width="4" height="14" rx="1.2"/><rect x="13.5" y="5" width="4" height="14" rx="1.2"/></symbol>
+  </svg>
+
+  <div class="wrap">
+    <header class="pf-head">
+      <div class="eyebrow" data-reveal><b>08</b><i></i>Proof</div>
+      <h2 class="t-h2" id="proof-title" data-reveal style="--d:1">Watch it work. <span class="serif">Unedited.</span></h2>
+      <p class="t-lede pf-lede" data-reveal style="--d:2">Real tasks on real phones, recorded as they ran.</p>
+    </header>
+
+    <!-- real recordings: the poster shows until play; nothing downloads before that (preload="none") -->
+    <div class="pf-grid">
+
+      <figure class="pf-item pf-item--lead" data-reveal style="--d:1">
+        <div class="pf-player">
+          <video class="pf-video" src="assets/proof/videos/instagram.mp4" poster="assets/proof/instagram-telegram.jpg" preload="none" playsinline></video>
+          <span class="chip pf-chip pf-chip--real"><i class="dot"></i>Real phone</span>
+          <div class="pf-ctrl" aria-hidden="true">
+            <span class="pf-tc">0:00 / 1:02</span>
+            <span class="pf-bar"><i class="pf-buf"></i><i class="pf-prog"></i></span>
+          </div>
+          <button class="pf-play" type="button" aria-label="Play recording: Posts the latest video to Instagram, then updates Abdulla on Telegram">
+            <span class="pf-play-ico"><svg class="pf-i-play"><use href="#pf-i-play"/></svg><svg class="pf-i-pause"><use href="#pf-i-pause"/></svg></span>
+          </button>
+        </div>
+        <figcaption class="pf-cap">
+          <span><h3 class="pf-title">Posts the latest video to Instagram, then updates Abdulla on Telegram</h3><span class="pf-tag">“Post the latest video on my phone to Instagram with a short caption, then update Abdulla on Telegram.”</span></span>
+          <span class="pf-dur"><span class="sr-only">Duration </span>1:02</span>
+        </figcaption>
+      </figure>
+
+      <figure class="pf-item" data-reveal style="--d:2">
+        <div class="pf-player">
+          <video class="pf-video" src="assets/proof/videos/robot-hand.mov" poster="assets/proof/robot-hand.jpg" preload="none" playsinline></video>
+          <span class="chip pf-chip pf-chip--real"><i class="dot"></i>Real phone</span>
+          <div class="pf-ctrl" aria-hidden="true">
+            <span class="pf-tc">0:00 / 0:20</span>
+            <span class="pf-bar"><i class="pf-buf"></i><i class="pf-prog"></i></span>
+          </div>
+          <button class="pf-play" type="button" aria-label="Play recording: Robot hands tapping real phones">
+            <span class="pf-play-ico"><svg class="pf-i-play"><use href="#pf-i-play"/></svg><svg class="pf-i-pause"><use href="#pf-i-pause"/></svg></span>
+          </button>
+        </div>
+        <figcaption class="pf-cap">
+          <span><h3 class="pf-title">Robot hands tapping real phones</h3><span class="pf-tag">The machine hand at work</span></span>
+          <span class="pf-dur"><span class="sr-only">Duration </span>0:20</span>
+        </figcaption>
+      </figure>
+
+      <figure class="pf-item" data-reveal style="--d:3">
+        <div class="pf-player">
+          <video class="pf-video" src="assets/proof/videos/uber.mov" poster="assets/proof/uber-text-alex.jpg" preload="none" playsinline></video>
+          <span class="chip pf-chip pf-chip--real"><i class="dot"></i>Real phone</span>
+          <div class="pf-ctrl" aria-hidden="true">
+            <span class="pf-tc">0:00 / 0:25</span>
+            <span class="pf-bar"><i class="pf-buf"></i><i class="pf-prog"></i></span>
+          </div>
+          <button class="pf-play" type="button" aria-label="Play recording: Checks the Uber status, then texts Alex">
+            <span class="pf-play-ico"><svg class="pf-i-play"><use href="#pf-i-play"/></svg><svg class="pf-i-pause"><use href="#pf-i-pause"/></svg></span>
+          </button>
+        </div>
+        <figcaption class="pf-cap">
+          <span><h3 class="pf-title">Checks the Uber status, then texts Alex</h3><span class="pf-tag">“Check my Uber driver status and text Alex an update.”</span></span>
+          <span class="pf-dur"><span class="sr-only">Duration </span>0:25</span>
+        </figcaption>
+      </figure>
+
+    </div>
+  </div>
+</section>
+
+<section class="section pr" id="pricing" data-module="pricing" aria-labelledby="pricing-title">
+  <div class="wrap">
+
+    <header class="pr-head">
+      <div class="eyebrow" data-reveal><b>09</b><i></i>Pricing</div>
+      <h2 class="t-h2" id="pricing-title" data-reveal style="--d:1">Cloud or Real phone.<br>You decide we provide</h2>
+      <p class="t-lede" data-reveal style="--d:2">Start in the cloud. When an app pushes back, switch to a real device by changing one parameter.</p>
+    </header>
+
+    <p class="pr-api" data-reveal style="--d:3">
+      <span>Same API on every plan. Switch with one parameter:</span>
+      <span class="pr-api-code">
+        <code class="pr-c-cloud">device="cloud"</code>
+        <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        <code class="pr-c-real">device="real"</code>
+      </span>
+    </p>
+
+    <ul class="pr-plans" id="phones" role="list">
+      <!-- cloud: one card, two ways to pay -->
+      <li class="pr-plan card pr-plan--cloud" data-kind="cloud" data-mode="unlimited" data-reveal style="--d:0">
+        <div class="pr-seg" role="group" aria-label="Cloud Phone billing">
+          <button class="pr-seg-btn" type="button" data-mode="unlimited" aria-pressed="true">Monthly</button>
+          <button class="pr-seg-btn" type="button" data-mode="session" aria-pressed="false">Per minute</button>
+        </div>
+        <div class="pr-plan-top">
+          <h3 class="pr-name">Cloud Phone</h3>
+        </div>
+        <div class="pr-modes">
+          <div class="pr-mode pr-mode--unlimited">
+            <p class="pr-price"><span class="pr-unit">from</span><span class="pr-amt">$20</span><span class="pr-unit">/mo</span></p>
+            <p class="pr-desc">QA, scraping and testing</p>
+            <ul class="pr-checks" role="list">
+              <li><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>One always-on Android</li>
+              <li><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>ADB + vision control</li>
+              <li><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Keeps apps and logins between runs</li>
+              <li><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Unlimited minutes</li>
+            </ul>
+          </div>
+          <div class="pr-mode pr-mode--session">
+            <p class="pr-price"><span class="pr-amt">$0.024</span><span class="pr-unit">/min</span></p>
+            <p class="pr-desc">Bursty tasks and quick experiments</p>
+            <ul class="pr-checks" role="list">
+              <li><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Pay only while it runs</li>
+              <li><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Android cloud phones</li>
+              <li><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Boots in about 4 seconds</li>
+              <li><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>MCP, API and CLI</li>
+            </ul>
+          </div>
+        </div>
+        <a class="btn btn--ghost pr-cta" href="/docs.html#quickstart">Get started <svg class="ico arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        <a class="pr-enterprise" href="#book-a-call">Cloud Enterprise · Talk to us →</a>
+      </li>
+
+      <li class="pr-plan card card--dark pr-plan--real" data-kind="real" data-reveal style="--d:1">
+        <span class="tape pr-tape" style="--rot:6deg" aria-hidden="true">most asked for</span>
+        <div class="pr-plan-top">
+          <h3 class="pr-name">Real iPhone · Monthly</h3>
+          <span class="pr-tag"><i class="pr-dot"></i>Real</span>
+        </div>
+        <p class="pr-price"><span class="pr-amt">$99</span><span class="pr-unit">/mo</span></p>
+        <p class="pr-desc">Apps that block emulators</p>
+        <ul class="pr-checks" role="list">
+          <li><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Retail iPhone</li>
+          <li><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Real carrier SIM</li>
+          <li><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Robot stylus input</li>
+          <li><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Passes device integrity checks</li>
+        </ul>
+        <a class="btn btn--signal pr-cta" href="#book-a-call">Reserve a phone <svg class="ico arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        <a class="pr-enterprise" href="#book-a-call">Real iPhone Enterprise · Talk to us →</a>
+      </li>
+
+      <li class="pr-plan card pr-plan--fleet" data-reveal style="--d:2">
+        <div class="pr-plan-top">
+          <h3 class="pr-name">Enterprise</h3>
+          <span class="pr-tag"><i class="pr-dot"></i>Fleet</span>
+        </div>
+        <p class="pr-price"><span class="pr-amt">Custom</span></p>
+        <p class="pr-desc">Cloud phones or real iPhones</p>
+        <ul class="pr-checks" role="list">
+          <li><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Hundreds of devices</li>
+          <li><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Dedicated racks</li>
+          <li><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>SSO and audit logs</li>
+          <li><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Support with an SLA</li>
+        </ul>
+        <a class="btn btn--ghost pr-cta" href="#book-a-call">Book a demo <svg class="ico arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+      </li>
+    </ul>
+
+    <!-- the switch (moved here from the old "Pick a phone" section) -->
+    <div class="pr-switch" data-reveal style="--d:1">
+      <div class="pr-pill">
+        <code class="pr-line"><span>phone</span><span class="pr-p">&nbsp;=&nbsp;</span><span>pu</span><span class="pr-p">.</span><span>acquire</span><span class="pr-p">(</span><span class="pr-arg">device</span><span class="pr-p">=</span><span class="pr-valwrap"><button class="pr-val" type="button" role="switch" aria-checked="false" aria-label="Real phone"><span class="pr-win" aria-hidden="true"><span class="pr-reel"><span>"cloud"</span><span>"real"</span><span>"cloud"</span><span>"real"</span><span>"cloud"</span></span></span></button><span class="pr-note hand" aria-hidden="true"><svg viewBox="0 0 40 30"><path class="scribble" d="M30 27C17 26 9 18 8 5M3 10l5-6 5 5"/></svg>flip it</span></span><span class="pr-p">)</span></code>
+        <i class="pr-sep" aria-hidden="true"></i>
+        <span class="pr-switch-tag">Same code. Same tools. Different phone.</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="cl" data-module="closing">
+<section class="section cl-qa" id="faq" aria-labelledby="faq-title">
+
+  <!-- ============ FAQ ============ -->
+  <div class="wrap cl-faq">
+    <div class="cl-faq__head">
+      <div class="eyebrow" data-reveal><b>10</b><i></i>FAQ</div>
+      <h2 class="t-h2" id="faq-title" data-reveal style="--d:1">Questions,<br>answered.</h2>
+      <p class="t-body cl-faq__more" data-reveal style="--d:2">Still curious? <a class="cl-link" href="#book-a-call">Book a call with us</a></p>
+      <div class="cl-note" data-reveal style="--d:3">
+        <svg class="cl-note__arrow" viewBox="0 0 64 52" aria-hidden="true"><path class="scribble" d="M58 44c-14 2-27-3-35-12-5-6-8-14-9-24"/><path class="scribble" d="M8 15l6-8 6 8"/></svg>
+        <span class="tape" style="--rot:-3deg">your use case, our phones</span>
+      </div>
+    </div>
+
+    <div class="cl-faq__list">
+      <details class="cl-q" open data-reveal>
+        <summary><span class="cl-q__n">01</span><span class="cl-q__t">What's the difference between a cloud phone and a real phone?</span><span class="cl-pm" aria-hidden="true"></span></summary>
+        <div class="cl-a"><p><b class="cl-k">Cloud phones</b> are virtual Android devices that boot in seconds and scale to hundreds. <b class="cl-k cl-k--real">Real phones</b> are retail iPhones and Androids in our San Francisco rack, tapped by a robot stylus, for apps that detect emulators.</p></div>
+      </details>
+      <details class="cl-q" data-reveal style="--d:1">
+        <summary><span class="cl-q__n">02</span><span class="cl-q__t">Is the iPhone really unmodified?</span><span class="cl-pm" aria-hidden="true"></span></summary>
+        <div class="cl-a"><p>Yes. No jailbreak, no root and no helper app. It's a retail iPhone with a real carrier SIM. A stylus touches the glass and an overhead camera reads the screen, so the phone runs exactly as it shipped.</p></div>
+      </details>
+      <details class="cl-q" data-reveal style="--d:2">
+        <summary><span class="cl-q__n">03</span><span class="cl-q__t">Which agents and clients does it work with?</span><span class="cl-pm" aria-hidden="true"></span></summary>
+        <div class="cl-a"><p>Any MCP client, including Claude, Cursor, Codex and Windsurf. You can also use the API or the CLI.</p></div>
+      </details>
+      <details class="cl-q" data-reveal style="--d:3">
+        <summary><span class="cl-q__n">04</span><span class="cl-q__t">Can I switch between cloud and real?</span><span class="cl-pm" aria-hidden="true"></span></summary>
+        <div class="cl-a"><p>Yes. Every phone uses the same API, the same MCP tools and the same CLI, so you only point your agent at a different phone. Most teams build on cloud phones and move the flows that get blocked onto real ones.</p></div>
+      </details>
+      <details class="cl-q" data-reveal style="--d:4">
+        <summary><span class="cl-q__n">05</span><span class="cl-q__t">Can my agent receive SMS and 2FA codes?</span><span class="cl-pm" aria-hidden="true"></span></summary>
+        <div class="cl-a"><p>On real phones, yes. Each one has a real carrier number, so verification codes arrive the way they would for a person, and your agent reads them in Messages.</p></div>
+      </details>
+      <details class="cl-q" data-reveal style="--d:5">
+        <summary><span class="cl-q__n">06</span><span class="cl-q__t">How does per-minute billing work?</span><span class="cl-pm" aria-hidden="true"></span></summary>
+        <div class="cl-a"><p>On-demand cloud phones cost <b class="cl-num">$0.024</b> for each minute a phone is running. You pay for the exact time used, so part of a minute costs part of the rate. Dedicated cloud phones and real phones are a flat monthly price.</p></div>
+      </details>
+    </div>
+  </div>
+</section>
+
+  <!-- ============ BOOK A CALL ============ -->
+  <section class="section bk" id="book-a-call" aria-labelledby="booking-title">
+    <div class="wrap">
+      <header class="bk-head">
+        <div class="eyebrow" data-reveal><b>11</b><i></i>Book a call</div>
+        <h2 class="t-h2 bk-title" id="booking-title" data-reveal style="--d:1">See STROWGER<br><span class="bk-accent">in action.</span></h2>
+        <p class="t-lede bk-lede" data-reveal style="--d:2">Have a workflow in mind? Let’s find the right phones for it.<br class="bk-br"> Choose a time for a 20-minute walkthrough of STROWGER.</p>
+      </header>
+      <div class="bk-scheduler">
+        <iframe class="bk-calendar" title="STROWGER demo — prototype" src="/booking.html" style="width:100%;height:490px;border:0;border-radius:16px;display:block"></iframe>
+      </div>
+      <p class="t-body bk-fallback">Prefer a separate tab? <a class="cl-link" href="/booking.html" target="_blank" rel="noopener">Open the booking page <span aria-hidden="true">↗</span></a></p>
+    </div>
+  </section>
+
+  <!-- ============ ENDING ============ -->
+  <section class="cl-end on-dark" id="start" aria-labelledby="start-title">
+    <canvas class="cl-rack" aria-hidden="true"></canvas>
+    <div class="cl-end__corner cl-end__corner--l" aria-hidden="true">San Francisco <i></i> <span data-sf-time>&nbsp;</span></div>
+    <div class="cl-end__corner cl-end__corner--r" aria-hidden="true">37.77° N <i></i> 122.42° W</div>
+    <div class="cl-end__in">
+      <div class="eyebrow" data-reveal><b>12</b><i></i>What's next</div>
+      <h2 class="t-hero cl-end__title" id="start-title" data-reveal style="--d:1">A more capable internet.</h2>
+      <p class="t-lede cl-end__lede" data-reveal style="--d:2">Agents are no longer limited to the browser. Give yours a phone in the next five minutes.</p>
+      <div class="cl-ctas" data-reveal style="--d:3">
+        <a class="btn btn--signal" href="/docs.html#quickstart">Get started <svg class="ico arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        <button class="btn btn--glass cl-copy" type="button" data-copy-setup>
+          <svg class="ico cl-copy__i" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2.5"/><path d="M15 5.5V5a1.5 1.5 0 0 0-1.5-1.5h-8A1.5 1.5 0 0 0 4 5v8a1.5 1.5 0 0 0 1.5 1.5H6"/></svg>
+          <svg class="ico cl-copy__ok" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
+          <span data-label>Copy setup prompt</span>
+        </button>
+      </div>
+      <div class="meta-row cl-end__meta" data-reveal style="--d:4"><span>Billed by the minute</span><span>Cancel anytime</span></div>
+    </div>
+  </section>
+
+  <!-- ============ FOOTER (closing.js moves it after <main> so it maps to contentinfo) ============ -->
+  <footer class="wrap cl-foot">
+    <div class="cl-foot__grid">
+      <div class="cl-brand">
+        <a class="cl-logo" href="#top" aria-label="strowger home">
+          <svg class="cl-logo__i" viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="2.5" width="12" height="19" rx="3.2"/><path d="M10.6 5.6h2.8"/></svg>
+          <span>strowger</span>
+        </a>
+        <p class="t-body cl-brand__line">Phones for agents. Made in San Francisco.</p>
+        <p class="t-mono cl-brand__c">© 2026 strowger</p>
+      </div>
+      <nav class="cl-cols" aria-label="Footer">
+        <div class="cl-col">
+          <p class="cl-col__h">Product</p>
+          <ul>
+            <li><a href="#pricing">Cloud Phone</a></li>
+            <li><a href="#real">Real Phone</a></li>
+            <li><a href="#pricing">Pricing</a></li>
+          </ul>
+        </div>
+        <div class="cl-col">
+          <p class="cl-col__h">Developers</p>
+          <ul>
+            <li><a href="/docs.html#">Docs</a></li>
+            <li><a href="/docs.html#mcp/overview">MCP</a></li>
+            <li><a href="/docs.html#api">API</a></li>
+            <li><a href="/docs.html#cli/overview">CLI</a></li>
+          </ul>
+        </div>
+        <div class="cl-col">
+          <p class="cl-col__h">Company</p>
+          <ul>
+            <li><a href="/docs.html#contact">Project on GitHub</a></li>
+            <li><a href="/docs.html#credits">Terms</a></li>
+            <li><a href="/docs.html#privacy">Privacy</a></li>
+          </ul>
+        </div>
+      </nav>
+    </div>
+
+    <div class="cl-sig">
+      <div class="cl-line" aria-hidden="true">
+        <div class="cl-track">
+          <div class="cl-set">
+            <span class="cl-slot-u"><i class="cl-unit"></i></span>
+            <span class="cl-slot-u"><i class="cl-unit"></i></span>
+            <span class="cl-slot-u"><i class="cl-unit"></i></span>
+            <span class="cl-slot-u"><i class="cl-unit"></i></span>
+            <span class="cl-slot-u"><i class="cl-unit"></i></span>
+            <span class="cl-slot-u"><i class="cl-unit"></i></span>
+            <span class="cl-slot-u"><i class="cl-unit"></i></span>
+            <span class="cl-slot-u"><i class="cl-unit"></i></span>
+          </div>
+        </div>
+        <i class="cl-roller cl-roller--l"></i><i class="cl-roller cl-roller--r"></i>
+      </div>
+      <div class="cl-bar" role="img" aria-label="The strowger wordmark, laser-etched into a black aluminium extrusion">
+        <span class="cl-slot cl-slot--t"></span>
+        <span class="cl-slot cl-slot--b"></span>
+        <span class="cl-bolt cl-bolt--l"></span>
+        <span class="cl-bolt cl-bolt--r"></span>
+        <span class="cl-micro cl-micro--l">Rack SF-01</span>
+        <span class="cl-micro cl-micro--r"><i class="cl-led"></i>Online</span>
+        <span class="cl-mark">
+          <svg viewBox="0 0 528 128" aria-hidden="true">
+            <defs>
+              <text id="cl-word" x="-1" y="96">strowger</text>
+              <pattern id="cl-scan" width="8" height="3.2" patternUnits="userSpaceOnUse"><rect width="8" height="1.1" fill="#000" fill-opacity=".16"/></pattern>
+              <linearGradient id="cl-etch-fill" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#C3C7CA"/>
+                <stop offset="1" stop-color="#979CA1"/>
+              </linearGradient>
+              <filter id="cl-etch" x="-4%" y="-12%" width="108%" height="124%" color-interpolation-filters="sRGB">
+                <feTurbulence type="fractalNoise" baseFrequency="1.1" numOctaves="2" seed="7" result="n"/>
+                <feColorMatrix in="n" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 .3 -.08" result="grain"/>
+                <feComposite in="grain" in2="SourceAlpha" operator="in" result="grainIn"/>
+                <feOffset in="SourceAlpha" dy="2" result="down"/>
+                <feComposite in="SourceAlpha" in2="down" operator="out" result="rim"/>
+                <feGaussianBlur in="rim" stdDeviation=".6" result="rimSoft"/>
+                <feFlood flood-color="#000" flood-opacity=".75"/>
+                <feComposite in2="rimSoft" operator="in" result="inner"/>
+                <feComposite in="inner" in2="SourceAlpha" operator="in" result="innerIn"/>
+                <feOffset in="SourceAlpha" dy="1.2" result="low"/>
+                <feComposite in="low" in2="SourceAlpha" operator="out" result="lip"/>
+                <feFlood flood-color="#fff" flood-opacity=".14"/>
+                <feComposite in2="lip" operator="in" result="lipLit"/>
+                <feMerge>
+                  <feMergeNode in="lipLit"/>
+                  <feMergeNode in="SourceGraphic"/>
+                  <feMergeNode in="grainIn"/>
+                  <feMergeNode in="innerIn"/>
+                </feMerge>
+              </filter>
+            </defs>
+            <use href="#cl-word" fill="url(#cl-etch-fill)" filter="url(#cl-etch)"/>
+            <use href="#cl-word" fill="url(#cl-scan)"/>
+          </svg>
+          <span class="cl-laser"></span>
+        </span>
+      </div>
+    </div>
+  </footer>
+</div>
+</main>
+<script type="module" src="js/main.js"></script>
+
+<a class="prototype-notice" href="/docs.html#limits">Maquette visuelle STROWGER · services et tarifs illustratifs</a><script type="module" src="/rebrand.js"></script></body>
+</html>
