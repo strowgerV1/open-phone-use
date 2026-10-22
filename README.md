@@ -21,7 +21,7 @@ with Runtime("http://127.0.0.1:8876", api_key) as runtime:
 | Dossier ou fichier | Contenu |
 |---|---|
 | [`site/`](site/) | Site complet : HTML, CSS, JavaScript, polices, vidéos, modèle 3D, textures et décodeurs |
-| [`strowger_env/`](strowger_env/) | API de réservation, console locale, SDK Python et adaptateurs Chromium, Linux Docker et Android ADB |
+| [`strowger_env/`](strowger_env/) | API de leases et jobs, console locale, SDK Python synchrone/asynchrone, adaptateurs Chromium, Linux Docker et Android ADB/UIAutomator2, pool Cuttlefish préprovisionné et viewer scrcpy local |
 | [`docker/`](docker/) | Image reproductible du bureau Linux |
 | [`scripts/`](scripts/) et [`Banc-telephones.command`](Banc-telephones.command) | Installation et lancement du banc local |
 | [`tests/`](tests/) et [`.github/workflows/`](.github/workflows/) | Tests automatisés et vérification continue |
@@ -39,7 +39,7 @@ Les clés, inventaires USB privés, captures de futurs appareils et journaux d�
 | Ressource | Implémentation | Validation locale du 23 octobre 2026 |
 |---|---|---|
 | Browser | Chromium dédié à chaque lease ; navigation, observation, clic, saisie, capture | Mission réelle et séparation de deux sessions testées |
-| Desktop | Desktop Linux X11 dans Docker ; capture, clic, texte, touches | Validation héritée 0.3 ; test opt-in non exécuté pour 0.4.0 |
+| Desktop | Desktop Linux X11 dans Docker ; capture, clic, texte, touches | Test Docker réel réussi dans la suite 0.4.0 |
 | Phone | Android ADB ou UIAutomator2, actions structurées, exclusivité et quarantaine des mutations incertaines | providers factices vérifiés ; aucun appareil connecté pour validation matérielle |
 | Cuttlefish | Pool déjà provisionné via cvdr, accès ADB sous lease | providers factices vérifiés ; aucune VM créée ni hôte KVM local |
 | iOS, Windows VM, portique robotisé | À développer | Non disponibles |
