@@ -1,4 +1,4 @@
-# STROWGER Environment Lease · 0.3.0
+# Open Phone Use · 0.3.0
 
 **Un agent réserve un environnement, agit, puis le libère.**
 
@@ -16,7 +16,7 @@ with Runtime("http://127.0.0.1:8876", api_key) as runtime:
 
 ## Tout le projet dans ce dépôt
 
-[Site public](https://strowger-environments.elnh.chatgpt.site/) · [Guide public de reproduction](https://strowger-environments.elnh.chatgpt.site/docs) · [Télécharger toutes les sources](https://github.com/strowgerV1/strowger-env/archive/refs/heads/main.zip)
+[Site public](https://strowger-environments.elnh.chatgpt.site/) · [Guide public de reproduction](https://strowger-environments.elnh.chatgpt.site/docs) · [Télécharger toutes les sources](https://github.com/strowgerV1/open-phone-use/archive/refs/heads/main.zip)
 
 | Dossier ou fichier | Contenu |
 |---|---|

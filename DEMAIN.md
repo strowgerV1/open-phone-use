@@ -56,8 +56,8 @@ Pour choisir un téléphone précis à l’enregistrement, ajouter `--serial IDE
 ## Reproduire sur un autre Mac
 
 ```sh
-git clone https://github.com/strowgerV1/strowger-env.git
-cd strowger-env
+git clone https://github.com/strowgerV1/open-phone-use.git
+cd open-phone-use
 # Installer Android SDK Platform Tools depuis la source officielle
 # ou avec Homebrew : brew install --cask android-platform-tools
 sh scripts/preparer-pilote.sh
